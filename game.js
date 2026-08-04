@@ -2339,10 +2339,8 @@ function spawnLobbyHumanoids() {
     const doorX = (typeof door !== 'undefined' && door && door.x !== undefined) ? door.x : (gameWorld.width / 2);
     const doorY = (typeof door !== 'undefined' && door && door.y !== undefined) ? door.y : (gameWorld.height / 2);
 
-    // 1. Machinegun Humanoid (Silver Original) on Left side of Lobby Door
-    spawnEnemyAtPosition({ x: doorX - 180, y: doorY + 60 }, 'machinegun_humanoid');
-    // 2. Assault Humanoid (Crimson Red) on Right side of Lobby Door
-    spawnEnemyAtPosition({ x: doorX + 180, y: doorY + 60 }, 'assault_humanoid');
+    // Assault Humanoid (Crimson Red) Guard in Lobby
+    spawnEnemyAtPosition({ x: doorX + 140, y: doorY + 60 }, 'assault_humanoid');
 }
 
 function spawnEnemy(presetPos = null, forcedBodyType = null) {
@@ -2362,7 +2360,7 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
     }
 
     // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
-    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid', 'assault_humanoid'];
+    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'assault_humanoid'];
     let bodyType = forcedBodyType || basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
     // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
@@ -3094,17 +3092,12 @@ function update(deltaTime) {
     }
 
     if (gameState === 'startingRoom') {
-        const hasMachinegun = enemies.some(e => e.bodyType === 'machinegun_humanoid');
         const hasAssault = enemies.some(e => e.bodyType === 'assault_humanoid');
-
         const doorX = (typeof door !== 'undefined' && door && door.x !== undefined) ? door.x : (gameWorld.width / 2);
         const doorY = (typeof door !== 'undefined' && door && door.y !== undefined) ? door.y : (gameWorld.height / 2);
 
-        if (!hasMachinegun) {
-            spawnEnemyAtPosition({ x: doorX - 180, y: doorY + 60 }, 'machinegun_humanoid');
-        }
         if (!hasAssault) {
-            spawnEnemyAtPosition({ x: doorX + 180, y: doorY + 60 }, 'assault_humanoid');
+            spawnEnemyAtPosition({ x: doorX + 140, y: doorY + 60 }, 'assault_humanoid');
         }
         checkDoorEntry();
         updateEnemies(deltaTime);

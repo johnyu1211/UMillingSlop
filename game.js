@@ -4125,8 +4125,8 @@ function updateEnemies(deltaTime) {
                 const bSpeed = enemy.bulletSpeed || 5.5;
                 const spread = enemy.spreadAngle || 0;
 
-                // Match Bullet Color to Monster Tier Color! (Tier 1: Red, Tier 2: Green, Tier 3: Purple, Tier 4: Pink)
-                const bColor = (enemy.tier === 4) ? '#FF1493' : (enemy.tier === 3) ? '#B026FF' : (enemy.tier === 2) ? '#00FF7F' : '#FF3333';
+                // Match Bullet Color to Monster Tier Color (Softened with White Pastel Tints per user request!)
+                const bColor = (enemy.tier === 4) ? '#FF88CC' : (enemy.tier === 3) ? '#D088FF' : (enemy.tier === 2) ? '#77FFB0' : '#FF7777';
 
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
                     enemy.lastAttackAnimTime = Date.now(); // Record attack animation start timestamp!

@@ -1005,6 +1005,22 @@ const allLevelUpOptions = [
         } 
     },
     { 
+        title: '💥 Twin Trigger I', 
+        desc: 'All Weapons: Trigger a fast 2nd automated burst after 0.15s! (Consumes 0 extra ammo)', 
+        condition: () => ((player.twinTriggerLevel || 0) === 0),
+        effect: () => { 
+            player.twinTriggerLevel = 1;
+        } 
+    },
+    { 
+        title: '💥 Twin Trigger II', 
+        desc: 'All Weapons: Trigger 2nd & 3rd automated bursts after 0.15s & 0.30s! (Consumes 0 extra ammo)', 
+        condition: () => ((player.twinTriggerLevel || 0) === 1),
+        effect: () => { 
+            player.twinTriggerLevel = 2;
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2547,9 +2563,9 @@ function spawnEnemy() {
 
 
 
-function createBullet(array, x, y, targetX, targetY, isSecondBurst = false) {
+function createBullet(array, x, y, targetX, targetY, isSecondBurst = false, isTwinBurst = false) {
     if (array === playerBullets) {
-        if (!isSecondBurst && (player.isReloading || (player.ammo <= 0 && blueBuffTimer <= 0))) return;
+        if (!isSecondBurst && !isTwinBurst && (player.isReloading || (player.ammo <= 0 && blueBuffTimer <= 0))) return;
 
         const baseWeaponDamage = (player.currentWeapon && player.currentWeapon.additionalDamage) ? player.currentWeapon.additionalDamage : 5;
         const recoilIntensity = Math.min(8, Math.max(1, baseWeaponDamage - 3));
@@ -2706,18 +2722,40 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false) {
             }
         }
 
-        if (!isSecondBurst && blueBuffTimer <= 0) {
+        if (!isSecondBurst && !isTwinBurst && blueBuffTimer <= 0) {
             player.ammo -= 1;
         }
 
         // Double Tap Synergy: Automatic 2nd burst 0.6s after primary shotgun firing!
-        if (isShotgun && player.doubleTapSelected && !isSecondBurst) {
+        if (isShotgun && player.doubleTapSelected && !isSecondBurst && !isTwinBurst) {
             setTimeout(() => {
                 if (gameState === 'gameStarted' && !isPaused && !levelUpState && player.hp > 0) {
                     const curMouseWorld = getMousePosInWorld(canvas, mouse);
-                    createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, true);
+                    createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, true, false);
                 }
             }, 600); // 0.6s delay!
+        }
+
+        // Universal Twin Trigger I & II: Fast 0.15s / 0.30s automated bursts for ALL weapons!
+        const twinLvl = player.twinTriggerLevel || 0;
+        if (twinLvl >= 1 && !isTwinBurst) {
+            // 2nd Burst after 150ms
+            setTimeout(() => {
+                if (gameState === 'gameStarted' && !isPaused && !levelUpState && player.hp > 0) {
+                    const curMouseWorld = getMousePosInWorld(canvas, mouse);
+                    createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, isSecondBurst, true);
+                }
+            }, 150);
+
+            // 3rd Burst after 300ms (Level 2)
+            if (twinLvl >= 2) {
+                setTimeout(() => {
+                    if (gameState === 'gameStarted' && !isPaused && !levelUpState && player.hp > 0) {
+                        const curMouseWorld = getMousePosInWorld(canvas, mouse);
+                        createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, isSecondBurst, true);
+                    }
+                }, 300);
+            }
         }
     }
 }

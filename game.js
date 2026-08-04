@@ -4593,7 +4593,10 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
             if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye') {
-                const aimAngle = (enemy.bodyType === 'cannon_laser_head' && enemy.cannonAimAngle !== undefined) ? enemy.cannonAimAngle : (enemy.currentBeamAngle || angleToPlayer);
+                const pCenterX = player.x + 45;
+                const pCenterY = player.y + 45;
+                const angleToP = Math.atan2(pCenterY - (eY + eSize / 2), pCenterX - (eX + eSize / 2));
+                const aimAngle = (enemy.bodyType === 'cannon_laser_head' && enemy.cannonAimAngle !== undefined) ? enemy.cannonAimAngle : (enemy.currentBeamAngle || angleToP);
                 ctx.save();
                 ctx.translate(eX + eSize / 2, eY + eSize / 2);
                 ctx.rotate(aimAngle - Math.PI / 2); // Rotate sprite bottom side to face player directly!

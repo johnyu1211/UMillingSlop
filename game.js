@@ -901,7 +901,7 @@ const allLevelUpOptions = [
     },
     { 
         title: '💥 Shot Roll II', 
-        desc: 'Mag size 1, Super Fast Reload, No Back-Recoil. 2x Speed when moving away from aim (0.8s) + Grey Afterimages', 
+        desc: 'Mag size 1, Super Fast Reload, No Back-Recoil. +0.4 Speed when moving away from aim (0.8s) + Grey Afterimages', 
         condition: () => (player.shotRollSelected && !player.shotRoll2Selected),
         effect: () => { 
             player.shotRoll2Selected = true;
@@ -2774,7 +2774,7 @@ function update(deltaTime) {
         }
 
         if (isNonAimMoving) {
-            moveSpeed *= 2.0; // 2x Move Speed!
+            moveSpeed += 0.4; // Fixed +0.4 Speed Boost!
 
             // Spawn Grey Afterimages!
             if (Math.random() < 0.7) {

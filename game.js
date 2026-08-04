@@ -4957,8 +4957,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
             if (enemy.isShieldActive && enemy.shieldTimer > 0) {
                 const shieldAlpha = Math.max(0, Math.min(1.0, enemy.shieldTimer / 750));
                 ctx.save();
-                ctx.strokeStyle = `rgba(82, 203, 188, ${shieldAlpha * 0.9})`; // Cyan Mint Shield Guard Line
-                ctx.fillStyle = `rgba(82, 203, 188, ${shieldAlpha * 0.22})`;  // Semi-transparent Protective Barrier
+                ctx.strokeStyle = `rgba(255, 17, 51, ${shieldAlpha * 0.9})`; // Crimson Red Shield Guard Line
+                ctx.fillStyle = `rgba(255, 17, 51, ${shieldAlpha * 0.22})`;  // Semi-transparent Red Barrier
                 ctx.lineWidth = 3.5;
                 ctx.beginPath();
                 ctx.arc(eX + eSize / 2, eY + eSize / 2, eSize * 0.55, 0, Math.PI * 2);

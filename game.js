@@ -3980,16 +3980,15 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
             const rainbowHue = (performance.now() * 0.45 + (bullet.dnaIndex || 0) * 45) % 360;
             const rainbowColor = `hsl(${rainbowHue}, 100%, 65%)`;
             ctx.fillStyle = rainbowColor;
-            ctx.shadowColor = `hsl(${rainbowHue}, 100%, 60%)`;
-            ctx.shadowBlur = 8;
+            ctx.shadowBlur = 0; // Completely remove glow blur!
             ctx.beginPath();
             ctx.arc(bullet.x, bullet.y, (bullet.size || 7) / 2, 0, Math.PI * 2, false);
             ctx.fill();
-            ctx.shadowBlur = 0;
         }
     });
 
-    // Single-Pass Batch Draw Call for standard bullets
+    // Single-Pass Batch Draw Call for standard bullets (100% Pure Clean Render, 0 Glow)
+    ctx.shadowBlur = 0;
     ctx.fillStyle = color;
     ctx.beginPath();
     for (let i = 0; i < array.length; i++) {
@@ -4001,6 +4000,7 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
         }
     }
     ctx.fill();
+    ctx.shadowBlur = 0;
 
     // Render Hitbox Debug Outlines inside world camera transform context
     renderHitboxes(ctx);

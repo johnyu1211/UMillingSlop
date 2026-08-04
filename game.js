@@ -1006,18 +1006,20 @@ const allLevelUpOptions = [
     },
     { 
         title: '💥 Twin Trigger I', 
-        desc: 'All Weapons: Trigger a fast 2nd automated burst after 0.15s! (Consumes 0 extra ammo)', 
+        desc: 'All Weapons: Fires +1 extra bullet simultaneously on every shot!', 
         condition: () => ((player.twinTriggerLevel || 0) === 0),
         effect: () => { 
             player.twinTriggerLevel = 1;
+            player.bonusBulletCount = (player.bonusBulletCount || 0) + 1;
         } 
     },
     { 
         title: '💥 Twin Trigger II', 
-        desc: 'All Weapons: Trigger 2nd & 3rd automated bursts after 0.15s & 0.30s! (Consumes 0 extra ammo)', 
+        desc: 'All Weapons: Fires +1 additional extra bullet on every shot! (Total +2 extra bullets)', 
         condition: () => ((player.twinTriggerLevel || 0) === 1),
         effect: () => { 
             player.twinTriggerLevel = 2;
+            player.bonusBulletCount = (player.bonusBulletCount || 0) + 1;
         } 
     },
     { 
@@ -2599,8 +2601,8 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false, isTw
         const flameGlowColor = (isRedBuff && redLvl >= 1) ? '#FF8800' : null;
         const isBurnBullet = isRedBuff && redLvl >= 1;
 
-        // Level 2: +2 Extra bullets in shooting direction during red buff
-        let shotCount = player.currentWeapon.ammoShotNum || 1;
+        // Twin Trigger I & II: Add bonus extra bullets per shot!
+        let shotCount = (player.currentWeapon.ammoShotNum || 1) + (player.bonusBulletCount || 0);
         const isShotgun = (player.currentWeapon && (player.currentWeapon.name === "winchester shotgun ww2 version" || player.currentWeapon.ammoShotNum > 1));
         const isVector = (player.currentWeapon && (player.currentWeapon.name === "vector smg 9mm" || player.currentWeapon.name.includes("vector")));
 

@@ -1262,7 +1262,7 @@ targetImageReloadTEXT.src = "targetImageReloadTEXT.png"
 let gameState = 'startingRoom'; // Possible states: 'startingRoom', 'gameStarted'
 const door = {
     x: gameWorld.width / 2 - 40,
-    y: gameWorld.height / 2 - 200,
+    y: 350,
     width: 80,
     height: 110,
     isOpen: true

@@ -48,13 +48,24 @@ function updateAndDrawGreyAfterimages(ctx) {
 
         ctx.save();
         ctx.globalAlpha = img.opacity * 0.65;
-        ctx.filter = 'grayscale(100%) brightness(140%)';
-        const sprite = getCachedImage(img.spritePath);
-        if (sprite && sprite.complete && sprite.naturalWidth !== 0) {
-            ctx.drawImage(sprite, img.x, img.y, img.size, img.size);
+
+        if (img.spritePath) {
+            ctx.filter = 'grayscale(100%) brightness(140%)';
+            const sprite = getCachedImage(img.spritePath);
+            if (sprite && sprite.complete && sprite.naturalWidth !== 0) {
+                ctx.drawImage(sprite, img.x, img.y, img.size, img.size);
+            }
         } else {
-            ctx.fillStyle = 'rgba(150, 150, 150, 0.4)';
-            ctx.fillRect(img.x, img.y, img.size, img.size);
+            // Player Afterimage matched EXACTLY to player collision hitbox (28x44 at +31, +23 offset)
+            const hitX = img.x + 31;
+            const hitY = img.y + 23;
+            const hitW = 28;
+            const hitH = 44;
+
+            ctx.fillStyle = '#AAAAAA';
+            ctx.shadowColor = '#FFFFFF';
+            ctx.shadowBlur = 8;
+            ctx.fillRect(hitX, hitY, hitW, hitH);
         }
         ctx.restore();
     }
@@ -641,20 +652,15 @@ function updateAndDrawBlueAfterimages(ctx) {
         }
 
         ctx.globalAlpha = img.alpha;
-        ctx.filter = 'drop-shadow(0 0 6px #00E5FF) brightness(150%)';
+        const hitX = img.x + 31;
+        const hitY = img.y + 23;
+        const hitW = 28;
+        const hitH = 44;
 
-        const spriteWidth = 32;
-        const spriteHeight = 32;
-        const sourceX = img.frame * spriteWidth;
-
-        if (img.lookingRight) {
-            ctx.drawImage(playerSprite, sourceX, 0, spriteWidth, spriteHeight, img.x, img.y, player.size, player.size);
-        } else {
-            ctx.save();
-            ctx.scale(-1, 1);
-            ctx.drawImage(playerSprite, sourceX, 0, spriteWidth, spriteHeight, -img.x - 85, img.y, player.size, player.size);
-            ctx.restore();
-        }
+        ctx.fillStyle = '#00E5FF';
+        ctx.shadowColor = '#00E5FF';
+        ctx.shadowBlur = 10;
+        ctx.fillRect(hitX, hitY, hitW, hitH);
     }
     ctx.restore();
 }

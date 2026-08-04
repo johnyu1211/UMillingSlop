@@ -241,7 +241,7 @@ const weapons = {
       gripPixelY: 60,
       bulletSize : 7,
       bulletColor : "#FFF4B8",
-      bulletGlowColor : "#FF3E00",
+      bulletGlowColor : "transparent",
       bulletTailThicc : 5,
       bulletTailcolor1 : "rgba(255, 215, 0, 0.4)",
       bulletTailcolor2 : "rgba(255, 215, 0, 0.2)",
@@ -277,7 +277,7 @@ const weapons = {
         maxAmmo : 13,
         bulletSize : 7,
         bulletColor : "#FFF4B8",
-        bulletGlowColor : "#FF3E00",
+        bulletGlowColor : "transparent",
         bulletTailThicc : 5,
         bulletTailcolor1 : "rgba(255, 215, 0, 0.4)",
         bulletTailcolor2 : "rgba(255, 215, 0, 0.2)",
@@ -313,7 +313,7 @@ const weapons = {
         gripPixelY: 64,
         bulletSize : 7,
         bulletColor : "#FFF4B8",
-        bulletGlowColor : "#FF3E00",
+        bulletGlowColor : "transparent",
         bulletTailThicc : 6,
         bulletTailcolor1 : "rgba(255, 215, 0, 0.4)",
         bulletTailcolor2 : "rgba(255, 215, 0, 0.2)",
@@ -350,7 +350,7 @@ const weapons = {
         gripPixelY: 64,
         bulletSize : 0,
         bulletColor : "#FF5733",
-        bulletGlowColor : "#rgba(255,255,255, 0.0)",
+        bulletGlowColor : "transparent",
         bulletTailThicc : 3,
         bulletTailcolor1 : "rgba(255,255,255, 0.3)",
         bulletTailcolor2 : "rgba(255,255,255, 0.2)",
@@ -3297,7 +3297,7 @@ function draw(currentFrame, deltaTime) {
         drawEnemies();
         drawWeapons(PlayercurrentFrame);
         drawEntities(playerBullets, player.currentWeapon.bulletColor, 
-            player.currentWeapon.bulletGlowColor,player.currentWeapon.bulletTailThicc, 
+            "transparent", player.currentWeapon.bulletTailThicc, 
             player.currentWeapon.bulletTailcolor1,
             player.currentWeapon.bulletTailcolor2,
             player.currentWeapon.bulletTailcolor3,
@@ -3323,7 +3323,7 @@ function draw(currentFrame, deltaTime) {
         drawWeapons(PlayercurrentFrame);   
 
         drawEntities(playerBullets, player.currentWeapon.bulletColor, 
-            player.currentWeapon.bulletGlowColor,player.currentWeapon.bulletTailThicc, 
+            "transparent", player.currentWeapon.bulletTailThicc, 
             player.currentWeapon.bulletTailcolor1,
             player.currentWeapon.bulletTailcolor2,
             player.currentWeapon.bulletTailcolor3,

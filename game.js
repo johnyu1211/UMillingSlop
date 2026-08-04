@@ -2378,6 +2378,7 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
     const minSpawnDist = isKamikaze ? 720 : 260; // Off-screen for Kamikaze!
     const maxSpawnDist = isKamikaze ? 950 : 420;
 
+    const margin = 80;
     let position = presetPos ? { ...presetPos } : { x: 0, y: 0 };
     let validPos = !!presetPos;
     let attempts = 0;

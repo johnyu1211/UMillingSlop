@@ -4790,8 +4790,12 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
                 const srcX = animIndex * frameW;
                 const srcY = row * frameH;
+                let drawFrameH = frameH;
+                if (row === 4) {
+                    drawFrameH = Math.floor(frameH * 0.85); // Slightly trim bottom height for Row 5 (Row index 4)!
+                }
 
-                ctx.drawImage(cImg, srcX, srcY, frameW, frameH, eX, eY, eSize, eSize);
+                ctx.drawImage(cImg, srcX, srcY, frameW, drawFrameH, eX, eY, eSize, eSize);
             } else if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye' || enemy.bodyType === 'green_laser_eye') {
                 const pCenterX = player.x + 45;
                 const pCenterY = player.y + 45;

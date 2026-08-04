@@ -4340,7 +4340,12 @@ function updateEnemies(deltaTime) {
                             moveX = Math.cos(angleToPlayer) * curSpeed * 0.4;
                             moveY = Math.sin(angleToPlayer) * curSpeed * 0.4;
                         } else if (elapsed < 1800) {
-                            // Phase 2 (1.2s ~ 1.8s, EXACT 0.6s HOLD): Freeze position & aim angle completely!
+                            // Phase 2 (1.2s ~ 1.8s, 0.6s Thin Pink Line): Soft tracking towards player!
+                            let diff = angleToPlayer - enemy.cannonAimAngle;
+                            while (diff < -Math.PI) diff += Math.PI * 2;
+                            while (diff > Math.PI) diff -= Math.PI * 2;
+                            enemy.cannonAimAngle += diff * 0.025; // Smooth soft tracking during thin pink line!
+
                             moveX = 0;
                             moveY = 0;
                         } else {

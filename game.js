@@ -4961,7 +4961,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 ctx.fillStyle = `rgba(82, 203, 188, ${shieldAlpha * 0.22})`;  // Semi-transparent Protective Barrier
                 ctx.lineWidth = 3.5;
                 ctx.beginPath();
-                ctx.arc(eX + eSize / 2, eY + eSize / 2, eSize * 0.72, 0, Math.PI * 2);
+                ctx.arc(eX + eSize / 2, eY + eSize / 2, eSize * 0.55, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.stroke();
                 ctx.restore();

@@ -2756,7 +2756,12 @@ function update(deltaTime) {
     
     let moveSpeed = player.isDodging ? player.dodgeSpeed : player.speed;
 
-    // --- SHOT ROLL II: 2x Speed for Non-Aim Movement (0.8s) + Grey Afterimages ---
+    // --- SHOT ROLL II: Hard Lock Max Ammo = 1 & 2x Speed for Non-Aim Movement (0.8s) + Grey Afterimages ---
+    if (player.shotRoll2Selected) {
+        player.maxAmmo = 1;
+        if (player.ammo > 1) player.ammo = 1;
+    }
+
     if (player.shotRoll2Selected && player.nonAimBoostTimer > 0) {
         player.nonAimBoostTimer -= (deltaTime || 16);
 

@@ -4592,7 +4592,16 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
     if (enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
-            ctx.drawImage(cImg, eX, eY, eSize, eSize);
+            if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye') {
+                const aimAngle = (enemy.bodyType === 'cannon_laser_head' && enemy.cannonAimAngle !== undefined) ? enemy.cannonAimAngle : (enemy.currentBeamAngle || angleToPlayer);
+                ctx.save();
+                ctx.translate(eX + eSize / 2, eY + eSize / 2);
+                ctx.rotate(aimAngle - Math.PI / 2); // Rotate sprite bottom side to face player directly!
+                ctx.drawImage(cImg, -eSize / 2, -eSize / 2, eSize, eSize);
+                ctx.restore();
+            } else {
+                ctx.drawImage(cImg, eX, eY, eSize, eSize);
+            }
             return;
         }
     }

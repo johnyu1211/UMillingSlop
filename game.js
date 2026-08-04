@@ -989,6 +989,14 @@ const allLevelUpOptions = [
         } 
     },
     { 
+        title: '💥 Stationary Fire', 
+        desc: 'Vector SMG: Standing still while firing gradually ramps up extra bullet counts per shot! (Resets on move)', 
+        condition: () => (!player.stationaryFireSelected),
+        effect: () => { 
+            player.stationaryFireSelected = true;
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2570,6 +2578,12 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false) {
         // Level 2: +2 Extra bullets in shooting direction during red buff
         let shotCount = player.currentWeapon.ammoShotNum || 1;
         const isShotgun = (player.currentWeapon && (player.currentWeapon.name === "winchester shotgun ww2 version" || player.currentWeapon.ammoShotNum > 1));
+        const isVector = (player.currentWeapon && (player.currentWeapon.name === "vector smg 9mm" || player.currentWeapon.name.includes("vector")));
+
+        // Stationary Fire: Add extra bullets for Vector SMG when standing still!
+        if ((isVector || !isShotgun) && player.stationaryFireSelected) {
+            shotCount += (player.stationaryBonusBullets || 0);
+        }
         
         if (isShotgun) {
             shotCount += (player.shotgunPelletBonus || 0);
@@ -2952,8 +2966,18 @@ function update(deltaTime) {
 
     if (keys['w'] || keys['W'] || keys['a'] || keys['A'] || keys['s'] || keys['S']|| keys['d'] || keys['D']) {
         player.isWalking = true; 
+        player.stationaryTimer = 0;
+        player.stationaryBonusBullets = 0;
     } else {
         player.isWalking = false;
+        if (player.stationaryFireSelected && player.isAttacking) {
+            player.stationaryTimer = (player.stationaryTimer || 0) + (deltaTime || 16);
+            // Every 550ms standing still while firing adds +1 extra bullet! (Up to +5 extra bullets)
+            player.stationaryBonusBullets = Math.min(5, Math.floor(player.stationaryTimer / 550));
+        } else {
+            player.stationaryTimer = 0;
+            player.stationaryBonusBullets = 0;
+        }
     }
 
     player.x = Math.max(0, Math.min(gameWorld.width - player.size, player.x));

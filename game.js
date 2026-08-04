@@ -4142,7 +4142,7 @@ function updateEnemies(deltaTime) {
                                     velocityX: Math.cos(curAngle) * 6.5,
                                     velocityY: Math.sin(curAngle) * 6.5,
                                     size: 7,
-                                    color: (enemy.bodyType === 'assault_humanoid') ? '#FF1133' : bColor,
+                                    color: (enemy.bodyType === 'assault_humanoid') ? '#FF1133' : (enemy.bodyType === 'machinegun_humanoid') ? '#52CBBC' : bColor,
                                     tier: enemy.tier || 1
                                 });
                             }

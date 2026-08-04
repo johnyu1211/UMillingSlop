@@ -892,7 +892,9 @@ const allLevelUpOptions = [
     { 
         title: '💥 Shot Roll', 
         desc: 'Shotgun Pellets +3 & Massive Recoil Shot-Roll with WASD Movement & Afterimages', 
+        condition: () => (!player.shotRollSelected),
         effect: () => { 
+            player.shotRollSelected = true;
             player.shotgunPelletBonus = (player.shotgunPelletBonus || 0) + 3; 
             player.shotgunRecoilBonus = (player.shotgunRecoilBonus || 0) + 8; 
         } 

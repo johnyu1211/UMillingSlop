@@ -2516,7 +2516,7 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
         speedMult *= 1.35; // Fast Charger
         shotCount = 3;     // Rush 3-burst shooter
         customSprite = 'OLD/RoBChar.png';
-        colorFilter = 'hue-rotate(330deg) saturate(240%) contrast(1.1)'; // Clean Crimson Red LED Filter!
+        colorFilter = 'none'; // Pure original sprite colors without any color filter!
     }
 
     // 45% chance for Melee Charger/Berserker enemy (attackType: 'dash') for Tier 1 & 2

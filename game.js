@@ -3649,15 +3649,29 @@ function startDodgeRecharge() {
 }
 
 function updateEntities(array) {
-    array.forEach((entity, index) => {
+    if (!array || array.length === 0) return;
+
+    // Hard Limit Cap: Cap total active bullets to 100 max to eliminate CPU lag!
+    if (array.length > 100) {
+        array.splice(0, array.length - 100);
+    }
+
+    const camLeft = camera.x - 250;
+    const camRight = camera.x + canvas.width + 250;
+    const camTop = camera.y - 250;
+    const camBottom = camera.y + canvas.height + 250;
+
+    for (let index = array.length - 1; index >= 0; index--) {
+        const entity = array[index];
         entity.x += entity.velocityX;
         entity.y += entity.velocityY;
 
-        // Remove if off-screen
-        if (entity.x < 0 || entity.x > gameWorld.width || entity.y < 0 || entity.y > gameWorld.height) {
+        // Viewport Culling & Out-of-bounds Removal
+        if (entity.x < camLeft || entity.x > camRight || entity.y < camTop || entity.y > camBottom ||
+            entity.x < 0 || entity.x > gameWorld.width || entity.y < 0 || entity.y > gameWorld.height) {
             array.splice(index, 1);
         }
-    });
+    }
 }
 
 function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tailColor2, tailColor3, checkPlayerByDodge) {
@@ -4489,28 +4503,36 @@ function handleCollisions() {
         }
     }
 
-    playerBullets.forEach((bullet, bulletIndex) => {
-        enemies.forEach((enemy, enemyIndex) => {
-            if (bullet.x < enemy.x + enemy.size &&
-                bullet.x + bullet.size > enemy.x &&
-                bullet.y < enemy.y + enemy.size &&
-                bullet.y + bullet.size > enemy.y) {
-                playerBullets.splice(bulletIndex, 1);
+    // 3. Fast Player Bullets vs Enemies collision with early break
+    for (let bIndex = playerBullets.length - 1; bIndex >= 0; bIndex--) {
+        const bullet = playerBullets[bIndex];
+        if (!bullet) continue;
+        const bSize = bullet.size || 7;
+        const bLeft = bullet.x - bSize;
+        const bRight = bullet.x + bSize;
+        const bTop = bullet.y - bSize;
+        const bBottom = bullet.y + bSize;
 
+        for (let eIndex = enemies.length - 1; eIndex >= 0; eIndex--) {
+            const enemy = enemies[eIndex];
+            if (!enemy) continue;
 
-                enemies[enemyIndex].justHit = true;
-                enemies[enemyIndex].killedByPlayer = true; // Flag for legitimate player kill!
-                enemies[enemyIndex].takenDamage = player.attackDamage + Math.floor(Math.random()*player.currentWeapon.additionalDamage); // Decrease enemy HP by 10
-                enemies[enemyIndex].hp -= enemies[enemyIndex].takenDamage;
+            if (bRight > enemy.x && bLeft < enemy.x + enemy.size &&
+                bBottom > enemy.y && bTop < enemy.y + enemy.size) {
+                
+                playerBullets.splice(bIndex, 1);
+                enemy.justHit = true;
+                enemy.killedByPlayer = true;
+                enemy.takenDamage = player.attackDamage + Math.floor(Math.random() * (player.currentWeapon.additionalDamage || 5));
+                enemy.hp -= enemy.takenDamage;
                 if (bullet.isBurnBullet) {
-                    enemies[enemyIndex].burnDoTTimer = 3500;
+                    enemy.burnDoTTimer = 3500;
                 }
-                enemies[enemyIndex].hitTime = performance.now();
-
-
+                enemy.hitTime = performance.now();
+                break; // Break inner enemy loop immediately upon bullet hit!
             }
-        });
-    });
+        }
+    }
 
     enemyBullets.forEach((bullet, bulletIndex) => {
         if (bullet.x < PlayercollisionX + PlayercollisionSize &&

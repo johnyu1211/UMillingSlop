@@ -2347,7 +2347,7 @@ function spawnEnemy() {
     }
 
     // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
-    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head'];
+    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye'];
     let bodyType = basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
     // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
@@ -2482,6 +2482,13 @@ function spawnEnemy() {
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
         colorFilter = 'hue-rotate(290deg) saturate(260%) brightness(1.25)'; // Hot Magenta / Pink Filter!
+    } else if (bodyType === 'green_laser_eye') {
+        sizeMult *= 0.75;
+        hpMult *= 3.0;     // Sustained Tank!
+        speedMult *= 1.25;
+        shotCount = 0;
+        customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
+        colorFilter = 'hue-rotate(100deg) saturate(280%) brightness(1.2)'; // Electric Lime Green Filter!
     }
 
     // 45% chance for Melee Charger/Berserker enemy (attackType: 'dash') for Tier 1 & 2
@@ -2507,6 +2514,9 @@ function spawnEnemy() {
     } else if (bodyType === 'cannon_laser_head') {
         dedicatedCooldown = 3800; // 3.8s Cooldown for Cannon Laser Head!
         initialCooldown = 400;
+    } else if (bodyType === 'green_laser_eye') {
+        dedicatedCooldown = 5500; // 5.5s Long Cooldown for Green Laser Eye!
+        initialCooldown = 300;
     }
 
     const baseEnemyHp = 30 + (pLvl - 1) * 8;
@@ -4056,7 +4066,7 @@ function updateEnemies(deltaTime) {
                 enemy.dashVectorX = Math.cos(dashAngle) * dashSpeed;
                 enemy.dashVectorY = Math.sin(dashAngle) * dashSpeed;
             }
-        } else if (enemy.timeUntilNextAttack <= 0 && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && (enemy.shotCount || 0) > 0) {
+        } else if (enemy.timeUntilNextAttack <= 0 && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'green_laser_eye' && (enemy.shotCount || 0) > 0) {
             if (enemy.bodyType === 'three_head' && enemy.headPattern === 1) {
                 // Head Throw Attack (Yo-Yo Head Surge)
                 enemy.isThrowing = true;
@@ -4356,6 +4366,45 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
+                // Green Laser Eye AI: 1.2s warning + 4.5s Long Duration Continuous Low Damage Beam!
+                if (enemy.bodyType === 'green_laser_eye') {
+                    if (enemy.timeUntilNextAttack <= 0) {
+                        enemy.isFiringGreenLaser = true;
+                        enemy.greenLaserTimer = 5700; // 1.2s warning + 4.5s long continuous beam!
+                        enemy.timeUntilNextAttack = enemy.attackCooldown || 5500;
+                    }
+
+                    if (enemy.isFiringGreenLaser) {
+                        enemy.greenLaserTimer -= (deltaTime || 16);
+                        if (enemy.greenLaserTimer <= 0) {
+                            enemy.isFiringGreenLaser = false;
+                        }
+
+                        const eCenterX = enemy.x + enemy.size / 2;
+                        const eCenterY = enemy.y + enemy.size / 2;
+                        const pCenterX = player.x + 45;
+                        const pCenterY = player.y + 45;
+                        const distToPlayer = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
+                        const rushAngle = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
+
+                        const isWarningPhase = enemy.greenLaserTimer > 4500; // First 1.2s warning phase
+
+                        if (isWarningPhase) {
+                            if (distToPlayer > 200) {
+                                moveX = Math.cos(rushAngle) * 1.8;
+                                moveY = Math.sin(rushAngle) * 1.8;
+                            } else {
+                                moveX = 0;
+                                moveY = 0;
+                            }
+                        } else {
+                            // Long 4.5s Firing Phase: Slow movement while sweeping beam!
+                            moveX = Math.cos(rushAngle) * 0.5;
+                            moveY = Math.sin(rushAngle) * 0.5;
+                        }
+                    }
+                }
+
                 // Separation Steering Force: Push away nearby enemies to prevent central clustering
                 for (let j = 0; j < enemies.length; j++) {
                     if (index === j) continue;
@@ -4590,6 +4639,72 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 ctx.restore();
             }
 
+            // Render Long Duration Continuous Green Laser Beam for green_laser_eye (4.5s long continuous fire, low tick damage)
+            if (enemy.bodyType === 'green_laser_eye' && enemy.isFiringGreenLaser) {
+                const laserProgress = (5700 - enemy.greenLaserTimer);
+                ctx.save();
+                ctx.filter = 'none'; // Ensure 100% PURE Lime Green colors!
+
+                if (laserProgress < 1200) {
+                    // Warning phase (1.2s): Track aim angle
+                    enemy.currentBeamAngle = angleToPlayer;
+                    const progressRatio = Math.min(1, laserProgress / 1200);
+
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+                    ctx.strokeStyle = `rgba(0, 255, 102, ${progressRatio * 0.95})`; // Electric Lime Green Warning Line
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([8, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(eCenterX, eCenterY);
+                    ctx.lineTo(eCenterX + Math.cos(angleToPlayer) * 5000, eCenterY + Math.sin(angleToPlayer) * 5000);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else {
+                    // Long Firing Phase (4.5s): Continuous Lime Green Beam (#00FF66) with soft tracking!
+                    if (!isPaused && !levelUpState) {
+                        let diff = angleToPlayer - enemy.currentBeamAngle;
+                        while (diff < -Math.PI) diff += Math.PI * 2;
+                        while (diff > Math.PI) diff -= Math.PI * 2;
+                        enemy.currentBeamAngle += diff * 0.022; // Smooth 0.022 tracking speed!
+                    }
+
+                    const fireAngle = enemy.currentBeamAngle;
+                    const beamEndX = eCenterX + Math.cos(fireAngle) * 5000;
+                    const beamEndY = eCenterY + Math.sin(fireAngle) * 5000;
+
+                    const remainingMs = enemy.greenLaserTimer; // 0 ~ 4500ms
+                    const fadeRatio = Math.min(1, Math.max(0, remainingMs / 500));
+
+                    ctx.shadowColor = '#00FF66';
+                    ctx.shadowBlur = 14 * fadeRatio;
+
+                    // Lime Green Beam Outer Line
+                    ctx.strokeStyle = `rgba(0, 255, 102, ${fadeRatio * 0.95})`;
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.moveTo(eCenterX, eCenterY);
+                    ctx.lineTo(beamEndX, beamEndY);
+                    ctx.stroke();
+
+                    // Soft White-Green Core Line
+                    ctx.strokeStyle = `rgba(230, 255, 235, ${fadeRatio * 0.95})`;
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(eCenterX, eCenterY);
+                    ctx.lineTo(beamEndX, beamEndY);
+                    ctx.stroke();
+
+                    // Continuous Low Tick Damage (2 DMG per tick - softer than Blue laser)
+                    const pRadius = 24;
+                    const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
+                    if (distToBeam < pRadius) {
+                        applyPlayerDamage(2, "Green Laser Eye (Continuous Beam Sweep)");
+                    }
+                }
+                ctx.restore();
+            }
+
             return;
         }
     }
@@ -4597,7 +4712,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
     if (enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
-            if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye') {
+            if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye' || enemy.bodyType === 'green_laser_eye') {
                 const pCenterX = player.x + 45;
                 const pCenterY = player.y + 45;
                 const angleToP = Math.atan2(pCenterY - (eY + eSize / 2), pCenterX - (eX + eSize / 2));

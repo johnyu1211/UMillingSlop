@@ -617,7 +617,7 @@ const maxShieldRechargeTimer = 8000;
 let grabHitFreezeTimer = 0; // 0.5s screen-wide entity hit-freeze timer upon grab hit
 
 function applyPlayerDamage(amount, reason = "Monster Attack") {
-    if (player.isDodging || player.hp <= 0) return;
+    if (gameState === 'startingRoom' || player.isDodging || player.hp <= 0) return; // 100% Infinite HP / Godmode inside Lobby startingRoom!
 
     shieldRechargeTimer = maxShieldRechargeTimer; // Reset 20s auto-recharge timer on damage!
 

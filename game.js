@@ -1011,6 +1011,15 @@ function openLevelUpOptions() {
     currentLevelUpOptions = finalOptions.slice(0, 3);
 }
 
+function openAllUpgradesMenu() {
+    for (let k in keys) { keys[k] = false; }
+    levelUpState = true;
+    selectedOptionIndex = 0;
+
+    // Filter ALL available upgrades across the entire pool!
+    currentLevelUpOptions = allLevelUpOptions.filter(opt => !opt.condition || opt.condition());
+}
+
 
 
 
@@ -1237,10 +1246,10 @@ document.addEventListener('keydown', (event) => {
         return;
     }
 
-    // Debug Level-Up Shortcut: Ctrl + L
+    // Debug All Upgrades Menu Shortcut: Ctrl + L (Opens ALL upgrade options list)
     if (event.ctrlKey && (event.key === 'l' || event.key === 'L' || event.code === 'KeyL')) {
         event.preventDefault(); // Prevent browser URL bar focus!
-        openLevelUpOptions();   // Open Level-Up Card Selection Overlay immediately!
+        openAllUpgradesMenu();  // Open ALL available upgrade options menu!
         return;
     }
 
@@ -2105,9 +2114,17 @@ function drawLevelUpOptions() {
     const itemHeight = 72;
     const itemSpacing = 82;
 
-    currentLevelUpOptions.forEach((option, index) => {
-        const itemY = startY + index * itemSpacing;
-        const isSelected = (index === selectedOptionIndex);
+    // Calculate scroll window range for all upgrades mode
+    let startIdx = 0;
+    if (currentLevelUpOptions.length > 3) {
+        startIdx = Math.max(0, Math.min(selectedOptionIndex - 1, currentLevelUpOptions.length - 3));
+    }
+    const visibleOptions = currentLevelUpOptions.slice(startIdx, startIdx + 3);
+
+    visibleOptions.forEach((option, idx) => {
+        const actualIndex = startIdx + idx;
+        const itemY = startY + idx * itemSpacing;
+        const isSelected = (actualIndex === selectedOptionIndex);
 
         if (isSelected) {
             // Highlight Card

@@ -4648,6 +4648,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 if (laserProgress < 1000) {
                     // Warning phase (1.0s): Track aim angle with sharp bright lime warning line!
                     enemy.currentBeamAngle = angleToPlayer;
+                    enemy.hasOffsetStartAngle = false; // Reset flag for new attack
                     const progressRatio = Math.max(0.4, Math.min(1, laserProgress / 1000));
 
                     ctx.shadowBlur = 0;
@@ -4661,12 +4662,18 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
-                    // Long Firing Phase (4.5s): Continuous Lime Green Beam (#00FF66) with balanced tracking (0.038)!
+                    // Long Firing Phase (4.5s): Start beam slightly BEHIND the player angle so player can dodge!
+                    if (!enemy.hasOffsetStartAngle) {
+                        const offsetSide = (Math.random() < 0.5 ? 1 : -1);
+                        enemy.currentBeamAngle = enemy.currentBeamAngle + offsetSide * (Math.PI * 0.35); // Start ~63 deg behind player!
+                        enemy.hasOffsetStartAngle = true;
+                    }
+
                     if (!isPaused && !levelUpState) {
                         let diff = angleToPlayer - enemy.currentBeamAngle;
                         while (diff < -Math.PI) diff += Math.PI * 2;
                         while (diff > Math.PI) diff -= Math.PI * 2;
-                        enemy.currentBeamAngle += diff * 0.038; // Balanced 0.038 tracking speed!
+                        enemy.currentBeamAngle += diff * 0.042; // Restored 0.042 tracking speed!
                     }
 
                     const fireAngle = enemy.currentBeamAngle;

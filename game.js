@@ -3222,21 +3222,8 @@ function drawAmbientLighting(ctx) {
     ctx.fillStyle = radGrad;
     ctx.fillRect(camera.x - 300, camera.y - 300, canvas.width + 600, canvas.height + 600);
 
-    // 2. Additive Emissive Glows for Monster Cores & Enemy Bullets
+    // 2. Additive Emissive Glows for Monster Cores
     ctx.globalCompositeOperation = 'lighter';
-
-    // B. Enemy Bullets Tier Glow
-    for (let i = 0; i < enemyBullets.length; i++) {
-        const eb = enemyBullets[i];
-        const ebColor = eb.color || '#FF3333';
-        const ebGrad = ctx.createRadialGradient(eb.x, eb.y, 1, eb.x, eb.y, 12);
-        ebGrad.addColorStop(0, ebColor);
-        ebGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = ebGrad;
-        ctx.beginPath();
-        ctx.arc(eb.x, eb.y, 12, 0, Math.PI * 2);
-        ctx.fill();
-    }
 
     ctx.restore();
 }

@@ -4797,17 +4797,18 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 const totalCols = 6;
                 const animIndex = Math.floor(Date.now() / 110) % totalCols;
 
-                let row = 2; // Row 2 (y=1028): Move Animation
-                const isAttackingRecently = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < 1300);
+                let row = 2; // Row 2 (y=1028): Move/Standard Animation
 
                 if (enemy.bodyType === 'machinegun_humanoid') {
-                    // Row 3 (y=1542): Attack while Stopped (Stationary Attack Form)
-                    if (isAttackingRecently || enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2200) - 800) {
+                    // Row 3 (y=1542): Attack ONLY during active 3-burst firing!
+                    const isFiringNow = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < 450);
+                    if (isFiringNow) {
                         row = 3;
                     }
                 } else if (enemy.bodyType === 'assault_humanoid') {
                     // Row 4 (y=2056): Attack while Moving (Moving Assault Attack Form)
-                    if (isAttackingRecently || enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2600) - 1000) {
+                    const isAssaultingRecently = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < 1300);
+                    if (isAssaultingRecently || enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2600) - 1000) {
                         row = 4;
                     }
                 }

@@ -4488,7 +4488,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
 
 
-    if ((enemy.bodyType === 'laser_eye' || enemy.bodyType === 'cannon_laser_head') && enemy.customSprite) {
+    if ((enemy.bodyType === 'laser_eye' || enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'green_laser_eye') && enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
             const eCenterX = eX + eSize / 2;

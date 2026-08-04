@@ -1,0 +1,1598 @@
+// door 진입시 random size의 room 생성 world border => room size
+// ver1.5 _ bullet Tail 추가 근데 bullet에 Tail 값을 넣은게 아니고 투박하게
+// drawEntites에 넣음, 귀찮아
+let gamemode = 'main' // survive
+
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+canvas.focus();
+let gameStartTime = Date.now();
+let gameTime = 0; // Time in seconds
+
+let totalKills = 0; // Total number of enemies killed by the player
+
+
+const gameWorld = {
+    width: 2000, // Width of the game world
+    height: 2000, // Height of the game world
+    borderWidth: 10, // Width of the border line
+};
+
+const maxRoomWidth = 5200;
+const minRoomWidth = 2150;
+const maxRoomHeight = 5200;
+const minRoomHeight = 1150;
+
+const startingXPosition = 800;
+const startingYPosition = 400;
+let shakeDuration = 0;
+let shakeIntensity = 5;
+
+let particles = [];
+
+
+const weapons = {
+    pistol: {
+      name: "mauser c96",
+      sprite: "guns/original sized/mauser c96.png",
+      reloadSprite: "guns/animations/mauser reload sprite sheet.png",
+      reloadFrames: 28,
+    },
+    vector: {
+        name: "vector",
+        sprite: "guns/original sized/vector.png",
+        reloadSprite: "guns/animations/vector reload sprite sheet.png",
+        reloadFrames: 32,
+      },
+   
+    // Add more weapons as needed
+  };
+
+
+const player = {
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    speed: 4.5, //moveSpeedOfPlayer for test was 3
+    size: 90, //임시로 키워봤음 (이미지문제)
+    hp: 30,
+    maxHp: 30,
+    ammo: 15,
+    maxAmmo: 15,
+    isReloading: false,
+    playerShootCooldown: 0,  // Initialize the cooldown
+    maxShootCooldown: 35,     // Example cooldown - adjust as needed
+    
+   reloadingCooldown: 1500,  // Initialize
+   maxReloadingCooldown: 5000, // Example reload time (adjust in milliseconds)
+
+
+   //dodgeSpeed: 0.03, // The distance the dodge moves the player
+    dodgeCooldown: 200, // Cooldown in milliseconds
+    isDodging: false, // Is the player currently dodging?
+    dodgeSpeed: 12,
+    dodgeCharges:5,
+    maxDodgeCharges: 5, // Maximum dodge charges
+    dodgeRechargeTime: 10000, // Time to recharge one dodge charge in milliseconds
+
+
+    lastDodgeTime: 0, // When did the last dodge occur
+    
+    isWalking: false, 
+    lookingLeft:true,
+    lookingRight:false,
+
+    isAttacking : false,
+    level: 1,
+    xp: 0,
+    xpToNextLevel: 100, // Adjust based on desired progression speed
+
+    attackDamage : 10,
+    currentWeapon : weapons.pistol,
+
+    isReloadingWeapon : false,
+    reloadAnimationProgress : 0,
+
+
+  };
+
+
+
+
+
+
+
+
+
+
+  
+let SpriteColisionGap=35;
+
+let PlayercollisionX= player.x; // Offset the collision box from the sprite's edges
+let PlayercollisionY= player.y ;
+let PlayercollisionSize= player.size -SpriteColisionGap; 
+
+let playerSprite = new Image();
+playerSprite.src = "player.png"; 
+
+
+let animationTimer = 0; // Explicit initialization is key! 
+const frameInterval = 200; // Time in milliseconds between frames
+terval = 100; // Time in milliseconds between frames
+
+let PlayercurrentFrame=0;
+let currentFrame = 0; 
+let spriteFrame = 0; 
+let numberOfFrames = 6; // Adjust if you have a different number of frames 
+let playerNumberOfframes = 0
+
+let basicenEmySprite = new Image();
+basicenEmySprite.src = "./enemyBasic/enemyBasic.png";
+
+let levelUpState = false;
+let selectedOptionIndex = 0;
+
+
+const levelUpOptions = ['Skip LOL','Max HP', 'Max Ammo', 'Reload Speed', 'Fire Rate', 'Damage', 'Speed'];
+
+
+
+
+const keys = {};
+const mouse = {
+    x: 0,
+    y: 0,
+    isDown: false
+};
+
+let zoomLevel = 1.3; // Start with a 1.5x zoom
+let lastTime = performance.now(); // Initialize before the game loop
+
+const enemySpeed = 1.5; //enemyMoveSpeed for test it was 0.5
+const enemySize = 90;
+const enemyHp = 30;
+
+const playerBullets = [];
+const enemyBullets = [];
+const bulletSpeed = 10;
+const bulletSize = 7;
+
+
+const playerBulletSpeed = 7; // Adjust to your desired speed
+const enemyBulletSpeed = 6.5;  // Adjust to your desired speed
+
+let targetImage = new Image(32,32); 
+targetImage.src = "empty.png"
+
+
+let gameState = 'startingRoom'; // Possible states: 'startingRoom', 'gameStarted'
+const door = {
+    x: canvas.width / 2 - 25,
+    y: 350,
+    width: 50,
+    height: 10,
+    isOpen: true
+};
+
+const enemies = [
+    {
+        sprite: basicenEmySprite, 
+        isDead:false,
+        speed: enemySpeed,
+        size: enemySize,
+        hp: enemyHp,
+        maxHp: enemyHp,
+        attackCooldown: 2000, // Time between attacks in milliseconds
+        timeUntilNextAttack: 1000, // Enemy can attack immediately
+        sprite: basicenEmySprite
+    
+    }, 
+];
+document.addEventListener('keydown', function(event) {
+    if (levelUpState) {
+        if(event.key === 'ArrowUp') {
+            selectedOptionIndex = Math.max(0, selectedOptionIndex - 1);
+        } else if(event.key === 'ArrowDown') {
+            selectedOptionIndex = Math.min(levelUpOptions.length - 1, selectedOptionIndex + 1);
+        } else if(event.key === 'Enter') {
+            // Apply the selected option here
+            console.log(`Selected option: ${levelUpOptions[selectedOptionIndex]}`);
+
+
+            if(selectedOptionIndex == 1){
+                player.maxHp += 20;
+                player.hp = player.maxHp;
+            }else if(selectedOptionIndex == 2){
+                player.maxAmmo += 5;
+                player.ammo = player.maxAmmo;
+            }else  if(selectedOptionIndex == 3){
+                player.maxReloadingCooldown -= player.maxReloadingCooldown / 20;
+            }else  if(selectedOptionIndex ==4){
+                if(player.maxShootCooldown>2){
+                player.maxShootCooldown -= 1;
+                }else{
+                
+                    player.maxHp += 1;
+                    player.attackDamage += 1;
+                    player.maxShootCooldown += 1;
+                    player.reloadingCooldown -= player.reloadingCooldown / 10;
+
+
+                }
+            }else  if(selectedOptionIndex ==5){
+                player.attackDamage += 5;
+            }else  if(selectedOptionIndex ==6){
+                player.speed += 0.05;
+            }
+
+                
+            
+
+            levelUpState = false; // Close the level-up menu after selection
+        }
+    }
+});
+
+
+
+
+
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === 'r' || event.key === 'R') {
+        startReloading();
+    } else {
+        keys[event.key] = true;
+    }
+});
+
+document.addEventListener('keyup', (event) => {
+    keys[event.key] = false;
+});
+
+document.addEventListener('keydown', (event) => {
+    if (event.key === ' ') {
+        const currentTime = performance.now();
+        performDodge(currentTime);
+        
+    
+    }
+    // Handle other keys
+});
+
+canvas.addEventListener('mousemove', (event) => {
+    const rect = canvas.getBoundingClientRect();
+    mouse.x = event.clientX - rect.left;
+    mouse.y = event.clientY - rect.top;
+});
+
+canvas.addEventListener('mousedown', (event) => {
+    
+    const mousePos = getMousePosInWorld(canvas, event); // Get adjusted coordinates
+    
+    if (event.button === 0) 
+  
+    if (!player.isReloading && player.ammo > 0 && player.playerShootCooldown <= 0) {
+        createBullet(playerBullets, player.x + player.size / 2, player.y + player.size / 2, mousePos.x, mousePos.y);
+        player.playerShootCooldown = player.maxShootCooldown;
+    }
+      startAttacking(mousePos);
+    
+
+
+
+});
+
+canvas.addEventListener('mouseup', (event) => {
+    if (event.button === 0) 
+    /*mouse.isDown = false;
+    player.isAttacking=false;
+    */
+    stopAttacking()
+});
+
+
+
+
+//무기먹
+function getWeaponFunck(getWeapon){
+    //weapons?
+    if(getWeapon == "pistol"){
+        player.currentWeapon = weapons.pistol
+        player.speed = 5.5
+        player.maxAmmo= 15
+        player.maxShootCooldown=35
+        player.maxReloadingCooldown= 1500
+        player.attackDamage = 10;
+    }else if(getWeapon == "vector"){
+        player.currentWeapon = weapons.vector
+        player.speed = 5
+        player.maxAmmo= 15
+        player.maxShootCooldown=10
+        player.maxReloadingCooldown= 2000
+        player.attackDamage = 7
+
+    }
+
+}
+
+
+
+function updateGameTime() {
+    const currentTime = Date.now();
+    gameTime = Math.floor((currentTime - gameStartTime) / 1000);
+}
+
+
+// Function to draw game stats like the timer, enemy count, and total kills
+function drawGameStats() {
+    const timerX = canvas.width / 2 - 50; // Center X position of the timer
+    const timerY = 20; // Y position of the timer
+    
+    // Example timer display
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+   
+
+    const minutes = Math.floor(gameTime / 60);
+    const seconds = gameTime % 60;
+    const formattedTime = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    ctx.fillStyle = 'white';
+    ctx.font = '20px Arial';
+    ctx.textAlign = 'center'; // Center the text horizontally
+    ctx.textBaseline = 'top'; // Align the text to the top
+    ctx.fillText(formattedTime, canvas.width / 2, 10); // Draw the text at the top center of the canvas
+    // Display remaining enemies and total kills below the timer
+    const statsY = timerY + 30; // Position below the timer
+    ctx.fillText(`                Enemies Left: ${enemies.length}`, timerX, statsY);
+    ctx.fillText(`                Total Kills: ${totalKills}`, timerX, statsY + 20);
+}
+
+
+function startAttacking(mousePos) {
+
+    // Don't start a new attack interval if one is already running 
+    if (player.attackInterval) return; 
+
+    player.attackInterval = setInterval(() => { 
+
+        player.isAttacking=true;
+        if (!player.isReloading && player.ammo > 0 && player.playerShootCooldown <= 0) {
+            createBullet(playerBullets, player.x + player.size / 2, player.y + player.size / 2, mousePos.x, mousePos.y);
+            player.playerShootCooldown = player.maxShootCooldown;
+            player.ammo -= 1;
+
+            // Apply rotation and shake effect
+            player.gunRotation = -0.1; // Slight rotation to simulate recoil
+            player.gunShakeIntensity = 2; // Small shake intensity
+            player.gunShakeDuration = 100; // Short duration for the shake effect
+        }
+
+    }, player.maxShootCooldown); // Interval time based on cooldown
+
+
+    
+
+    
+}
+
+
+function openLevelUpOptions() {
+    levelUpState = true; // Activate level-up state
+    drawLevelUpOptions(); // Draw options on the screen
+}
+
+// Function to draw level-up options
+function drawLevelUpOptions() {
+    const infoBoxX = canvas.width/2; // X position of the info box
+    const infoBoxY = canvas.height/2; // Y position of the info box (adjusted for demonstration)
+    const optionSpacing = 20; // Spacing between options
+
+    // Draw background for the options for visibility
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'; // Semi-transparent black
+    ctx.fillRect(infoBoxX -90, infoBoxY - 20, 200, levelUpOptions.length * optionSpacing + 30); // Adjust size as needed
+
+    ctx.fillStyle = '#FFFF00'; // Yellow color for visibility
+    ctx.font = '14px Arial';
+
+    levelUpOptions.forEach((option, index) => {
+        if(index === selectedOptionIndex) {
+            ctx.fillStyle = '#FF0000'; // Highlight the selected option with red color
+        } else {
+            ctx.fillStyle = '#FFFF00'; // Other options are yellow
+        }
+        let optionY = infoBoxY + (index * optionSpacing); // Calculate Y position of each option
+        ctx.fillText(option, infoBoxX + 10, optionY); // Adjust X and Y as needed
+    });
+}
+
+
+
+
+
+function stopAttacking() {
+    
+    player.isAttacking=false;
+    clearInterval(player.attackInterval);
+    player.attackInterval = null; // Reset the attackInterval variable
+}
+
+function getMousePosInWorld(canvas, event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+  
+    // Reverse camera transform and zoom
+    const worldX = (x - canvas.width / 2) / zoomLevel + player.x;
+    const worldY = (y - canvas.height / 2) / zoomLevel + player.y;
+  
+    return { x: worldX, y: worldY };
+  }
+
+function startReloading() {
+
+    player.isReloadingWeapon = true;
+    player.reloadAnimationProgress = 0;
+    player.isReloadingWeapon = true; // Mark as reloading
+
+
+    if (!player.isReloading && player.ammo < player.maxAmmo) {
+        player.isReloading = true;
+        player.reloadingCooldown = player.maxReloadingCooldown; // Start the cooldown
+        setTimeout(() => {
+            player.ammo = player.maxAmmo;
+            player.isReloading = false;
+            
+            player.isReloadingWeapon = false;
+        }, player.maxReloadingCooldown); 
+    }
+     if (!player.isReloading && player.ammo < player.maxAmmo) {
+        player.isReloading = true;
+        player.playerShootCooldown = player.maxShootCooldown; // Reuse for reloading 
+        setTimeout(() => {
+            player.ammo = player.maxAmmo;
+            player.isReloading = false;
+            
+            player.isReloadingWeapon = false;
+        }, player.maxShootCooldown); 
+    }
+}
+
+function spawnEnemy() {
+    if (gameState !== 'gameStarted') return;     
+    const margin = 100; // Adjust the margin as needed
+
+    
+
+    // Calculate random spawn position within the room, considering the margin
+    const position = {
+        x: Math.random() * (gameWorld.width - 2 * margin) + margin,
+        y: Math.random() * (gameWorld.height - 2 * margin) + margin
+    };
+
+      // Create the enemy object with the calculated position
+        const newEnemy = {
+        x: position.x,
+        y: position.y,
+        speed: enemySpeed,
+        size: enemySize,
+        hp: enemyHp,
+        maxHp: enemyHp,
+        attackCooldown: 2000, // Time between attacks in milliseconds
+        timeUntilNextAttack: 1000, // Enemy can attack immediately
+        sprite: basicenEmySprite,
+        isDead: false
+    };
+    enemies.push(newEnemy);
+}
+
+
+
+
+
+function createBullet(array, x, y, targetX, targetY) {
+   
+    // Calculate angle towards the mouse 
+    const angle = Math.atan2(targetY - y, targetX - x); 
+  
+
+    if (array === playerBullets) { 
+    
+
+    
+        startShake(10, player.attackDamage-5); // Adjust numbers based on desired effect
+        if (player.isReloading || (array === playerBullets && player.ammo <= 0)) return;
+
+        createParticles(x, y , angle);
+
+        array.push({ 
+            x: x,
+            y: y,
+              velocityX: Math.cos(angle) * playerBulletSpeed, 
+              velocityY: Math.sin(angle) * playerBulletSpeed,
+              size: bulletSize,
+        });
+      } else if (array === enemyBullets) { 
+        array.push({
+            x: x,
+            y: y,
+          velocityX: Math.cos(angle) * enemyBulletSpeed, 
+          velocityY: Math.sin(angle) * enemyBulletSpeed,
+          size: bulletSize,
+        });
+      }
+    if (array === playerBullets) player.ammo -= 1;
+
+
+    
+}
+
+
+
+function createParticles(x, y, angle) {
+
+
+    for (let i = 0; i < 10; i++) { // Create 10 particles per bullet
+        
+        const anglea = Math.random()* 1; // Random direction
+        const speed = Math.random() * 2 + 1; // Random speed
+        particles.push({
+            x: canvas.width /2 + 50,
+            y: canvas.height /2 + 50,
+            velocityX: Math.cos(angle + anglea) * speed,
+            velocityY: Math.sin(angle + anglea) * speed,
+            size: Math.random() * 2 + 1, // Random size
+            lifeSpan: Math.random() * 20, // Random lifespan
+            color: '#FFD700'
+        });
+    }
+}function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.velocityX;
+        p.y += p.velocityY;
+        p.lifeSpan--;
+
+        if (p.lifeSpan <= 0) {
+            particles.splice(i, 1);
+        }
+    }
+}
+
+function drawParticles(ctx) {
+    particles.forEach(p => {
+        ctx.fillStyle = p.color;
+        ctx.shadowBlur = 10; // Adjust for desired glow size        
+        ctx.shadowColor = p.color; // Use the same color for the glow
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2, true);
+        ctx.fill();
+    });
+
+    ctx.shadowBlur = 0; // Reset shadowBlur after drawing particles to not affect other canvas elements
+
+
+}
+
+
+
+
+
+
+
+function gainXP(amount) {
+    player.xp += amount;
+    if (player.xp >= player.xpToNextLevel) {
+        openLevelUpOptions() 
+        player.xp -= player.xpToNextLevel;
+        player.level++;
+        player.xpToNextLevel = Math.floor(player.xpToNextLevel * 1.3); // Example scaling
+        // Handle any level-up logic (e.g., increase player stats)
+    }
+}
+
+
+
+
+function update(deltaTime) {
+
+    
+    if (keys['w'] || keys['W']) player.y -= player.speed;
+    if (keys['s'] || keys['S']) player.y += player.speed;
+    if (keys['a'] || keys['A']) player.x -= player.speed;
+    if (keys['d'] || keys['D']) player.x += player.speed;
+    
+    if (keys['w'] || keys['W'] || keys['a'] || keys['A'] || keys['s'] || keys['S']|| keys['d'] || keys['D']) {
+        player.isWalking = true; 
+    } else {
+        player.isWalking = false;
+    }
+
+    if (keys['a'] || keys['A']){
+        player.lookingLeft = true;
+        player.lookingRight = false;
+    }else if(keys['d'] || keys['D']){
+        player.lookingLeft = false;
+        player.lookingRight = true;
+    }
+
+
+    player.x = Math.max(0, Math.min(gameWorld.width - player.size, player.x));
+    player.y = Math.max(0, Math.min(gameWorld.height - player.size, player.y));
+
+    if (player.isDodging) {
+
+    if (keys['w'] || keys['W']) player.y -= player.dodgeSpeed;
+    if (keys['s'] || keys['S']) player.y += player.dodgeSpeed;
+    if (keys['a'] || keys['A']) player.x -= player.dodgeSpeed;
+    if (keys['d'] || keys['D']) player.x += player.dodgeSpeed;  
+
+    
+
+    }
+
+
+    if (gameState === 'startingRoom') {
+        checkDoorEntry();
+    } else if (gameState === 'gameStarted') {
+        
+        handleGameStartedState();
+        getWeaponFunck("vector")
+    }
+
+
+    if (player.reloadingCooldown > 0) { // Decrease reloading cooldown
+        player.reloadingCooldown--;
+    }
+
+    if (player.ammo <= 0 && !player.isReloading) {
+        startReloading();
+    }
+
+    
+
+    if (player.playerShootCooldown > 0) {
+        player.playerShootCooldown--; 
+    } 
+
+    
+if (player.isReloadingWeapon) {
+    player.reloadAnimationProgress += deltaTime;
+    if (player.reloadAnimationProgress >= player.currentWeapon.reloadFrames * frameInterval) {
+        player.isReloadingWeapon = false;
+        player.reloadAnimationProgress = 0;
+    }
+}
+
+
+
+    updateEntities(playerBullets);
+    updateEntities(enemyBullets);
+    updateEnemies(deltaTime);
+    //enemyShoot();
+    handleCollisions();
+
+}
+
+function drawLeveL(text, x, y, color = 'white', font = '16px Arial'){
+    ctx.fillStyle = color;
+    ctx.font = font;
+    ctx.fillText(text, x, y);
+}
+
+function drawXPBar(infoBoxMargin, infoBoxWidth) {
+    const xpBarX = infoBoxMargin + 5;
+    const xpBarY = infoBoxMargin +55; // Adjust as needed
+    const xpBarWidth = infoBoxWidth - 10;
+    const xpBarHeight = 10;
+
+    // Background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+    ctx.fillRect(xpBarX, xpBarY, xpBarWidth, xpBarHeight);
+
+    // Foreground (progress)
+    const filledXpBarWidth = (player.xp / player.xpToNextLevel) * xpBarWidth;
+    ctx.fillStyle = '#FFD700'; // Gold color for XP bar
+    ctx.fillRect(xpBarX, xpBarY, filledXpBarWidth, xpBarHeight);
+
+    const levelDisplayX = infoBoxMargin + 30;
+    const levelDisplayY = infoBoxMargin + 10; 
+
+    drawLeveL(`Level: ${player.level}`, levelDisplayX, levelDisplayY, 'white', '14px Arial');
+
+
+}
+
+function drawInfoBox(){
+    // Info Box ...{
+        const infoBoxMargin = 10; 
+        const infoBoxWidth = 120;
+        const infoBoxHeight =150;
+    
+    
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.8)'; // Semi-transparent black background
+        ctx.fillRect(infoBoxMargin, infoBoxMargin, infoBoxWidth, infoBoxHeight);
+    
+        // HP Bar
+        const hpBarWidth = infoBoxWidth - 10;
+        const hpBarHeight = 15;
+        const hpY = infoBoxMargin + 30; 
+    
+    
+        // Ammo Bar Background (optional for contrast)
+        const ammoBarX = infoBoxMargin + 5;
+        const ammoBarY = infoBoxMargin + 45; // Adjust position as needed
+        const ammoBarWidth = infoBoxWidth - 10;
+        const ammoBarHeight = 10;
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.2)'; // Light background for ammo bar
+        ctx.fillRect(ammoBarX, ammoBarY, ammoBarWidth, ammoBarHeight);
+
+        // Ammo Bar Foreground
+        const filledAmmoBarWidth = (player.ammo / player.maxAmmo) * ammoBarWidth;
+        ctx.fillStyle = '#2BB0B9'; // color for the ammo bar
+        ctx.fillRect(ammoBarX, ammoBarY, filledAmmoBarWidth, ammoBarHeight);
+    
+    
+        if(gamemode=='survive'){
+            
+    drawXPBar(infoBoxMargin, infoBoxWidth);
+
+
+        }
+
+    // Draw existing info box elements
+    const dodgeCooldownProgress = Math.max(0, player.dodgeCooldown - (performance.now() - player.lastDodgeTime));
+    const cooldownPercentage = 1 - (dodgeCooldownProgress / player.dodgeCooldown);
+    // Draw dodge cooldown bard
+    ctx.fillStyle = 'gray'; // Cooldown background
+    ctx.fillRect(infoBoxMargin + 5, infoBoxMargin + 75, infoBoxWidth - 10, 10); // Adjust position/size as needed
+    ctx.fillStyle = 'green'; // Cooldown progress
+    ctx.fillRect(infoBoxMargin + 5, infoBoxMargin + 75, (infoBoxWidth - 10) * cooldownPercentage, 10);
+    
+
+
+    ctx.fillStyle = 'gray';  
+    ctx.fillRect(infoBoxMargin + 5, hpY, hpBarWidth, hpBarHeight);
+    ctx.fillStyle = 'lime'; 
+    ctx.fillRect(infoBoxMargin + 5, hpY, hpBarWidth * (player.hp / player.maxHp), hpBarHeight); 
+
+    // Draw Dodge Charges and Recharge Bar in the Info Box
+    const dodgeChargeWidth = 18; // Width of one dodge charge box
+    const dodgeChargeHeight = 18; // Height of one dodge charge box
+    const dodgeChargeMargin = 5; // Space between dodge charge boxes
+    const dodgeRechargeBarHeight = 10; // Height of the recharge bar
+    const dodgeInfoStartX = infoBoxMargin + 5; // Starting X position for the dodge info inside the info box
+    const dodgeInfoStartY = infoBoxHeight - dodgeChargeHeight - dodgeRechargeBarHeight - 30; // Adjust Y position as needed
+
+    let rechargeProgress = 0;
+    if (player.dodgeCharges < player.maxDodgeCharges) {
+        const timeSinceLastDodge = performance.now() - player.lastDodgeTime;
+        rechargeProgress = Math.min(1, timeSinceLastDodge / player.dodgeRechargeTime);
+    } else {
+        rechargeProgress = 1; // If charges are full, show the recharge bar as full
+    }
+    
+
+ // Draw dodge charge boxes
+ for (let i = 0; i < player.maxDodgeCharges; i++) {
+    ctx.fillStyle = i < player.dodgeCharges ? '#00FF00' : '#CCCCCC'; // Green for available charges, grey for used
+    ctx.fillRect(
+        dodgeInfoStartX + i * (dodgeChargeWidth + dodgeChargeMargin),
+        infoBoxMargin + dodgeInfoStartY,
+        dodgeChargeWidth,
+        dodgeChargeHeight
+    );
+}
+
+        //...infobox }
+}
+
+
+
+
+
+
+function startShake(duration, intensity) {
+    shakeDuration = duration;
+    shakeIntensity = intensity;
+}
+
+
+
+function draw(currentFrame) {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save(); 
+
+    let shakeX = 0;
+    let shakeY = 0;
+    if (shakeDuration > 0) {
+        shakeX = Math.random() * shakeIntensity - shakeIntensity / 2;
+        shakeY = Math.random() * shakeIntensity - shakeIntensity / 2;
+        shakeDuration -= 1; // Reduce duration each frame
+    }
+
+    ctx.translate(canvas.width / 2 + shakeX, canvas.height / 2 + shakeY);
+    ctx.scale(zoomLevel, zoomLevel); 
+    ctx.translate(-player.x, -player.y); 
+
+    const circleRadius = 20;
+    const circleCenterX = mouse.x;
+    const circleCenterY = mouse.y;
+
+    const imageRadius = 20; 
+    const imageCenterX = mouse.x; 
+    const imageCenterY = mouse.y;
+
+
+
+
+
+
+
+    
+
+    ctx.drawImage(targetImage, 
+                mouse.x - imageRadius,   // Subtract half the image width
+                mouse.y - imageRadius,   // Subtract half the image height
+                imageRadius * 2, 
+                imageRadius * 2
+                
+        ); 
+
+    if (gameState === 'startingRoom') {
+        drawDoor();
+        drawPlayer(PlayercurrentFrame);
+    } else if (gameState === 'gameStarted') {
+        drawPlayer(PlayercurrentFrame);
+        drawEntities(playerBullets, '#FF9C25', '#FF6225',5, 'rgba(255,98,37,0.3)','rgba(255,98,37,0.1)','rgba(255,98,37,0.05)');
+        drawEntities(enemyBullets, '#FFC9C9', 'red', 8, 'rgba(246,13,13,0.3)','rgba(246,13,13,0.1)','rgba(246,13,13,0.05)');
+        drawEnemies();
+    }
+    
+
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = gameWorld.borderWidth;
+    ctx.strokeRect(0, 0, gameWorld.width, gameWorld.height);
+
+
+
+    ctx.restore(); // Restore the canvas state after camera offset
+
+
+     // Cooldown/Reloading Circle
+    const percentage = player.isReloading ? 
+                        (player.maxShootCooldown - player.playerShootCooldown) / player.maxShootCooldown : // Reloading progress
+                        player.playerShootCooldown / player.maxShootCooldown;  // Cooldown progress
+
+   
+
+    ctx.beginPath();
+    ctx.arc(imageCenterX, imageCenterY, imageRadius * percentage, 0, 2 * Math.PI);
+    ctx.fillStyle = 'gray'; 
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.arc(circleCenterX, circleCenterY, circleRadius * percentage, 0, 2 * Math.PI);
+    ctx.fillStyle = 'rgba(255, 0, 0, 0.76)'; // Progress section is red
+    ctx.fill();
+
+
+    if(gamemode=='survive'){
+    if (levelUpState) {
+        drawLevelUpOptions();
+    }
+    }
+
+    drawGameStats()
+    drawInfoBox()
+
+        const infoBoxX = 55; // X position of the info box
+        const infoBoxY = 140; // Y position of the info box
+        const optionSpacing = 20; // Spacing between options
+        
+        // Define your level-up options
+        const options = ['Max HP : '+ player.maxHp, 'Max Ammo : '+player.maxAmmo, 'Reload Speed : '+ (player.maxReloadingCooldown), 'Fire Rate :' +(player.maxShootCooldown), 'Damage : '+player.attackDamage, 'Speed : '+player.speed];
+        
+        // Set the style for the level-up options
+        ctx.fillStyle = '#FFFF00'; // Yellow color for visibility
+        ctx.font = '14px Arial';
+        
+        // Draw each option
+        options.forEach((option, index) => {
+            let optionY = infoBoxY + 50 + (index * optionSpacing); // Calculate Y position of each option
+            ctx.fillText(option, infoBoxX + 10, optionY); // Adjust X and Y as needed
+        });
+
+    
+
+    ctx.restore(); // Restore the context state
+
+
+}
+
+function drawDoor() {
+    if (door.isOpen) {
+        ctx.fillStyle = 'brown';
+        ctx.fillRect(door.x, door.y, door.width, door.height);
+    }
+}
+
+function checkDoorEntry() {
+    if (player.x < door.x + door.width &&
+        player.x + player.size > door.x &&
+        player.y < door.y + door.height &&
+        player.y + player.size > door.y) {
+        generateRandomRoom(); // Generate a new room
+        console.log("Entered a new room."); gameState = 'gameStarted';
+        initializeGameStartedState(); // Now spawns enemies and starts game logic
+    }
+}
+
+function handleGameStartedState() {
+
+    if (player.ammo <= 0 && !player.isReloading) {
+        startReloading();
+    }
+
+}
+
+function initializeGameStartedState() {
+    // This function is called when the player enters the door to start the game
+    // Spawn initial enemies for the 'gameStarted' state
+    for (let i = 0; i < 5; i++) {
+        spawnEnemy();
+    }
+}
+
+
+
+
+function getAngleToMouse(playerX, playerY, mouseX, mouseY) {
+    const dx = mouseX - playerX;
+    const dy = mouseY - playerY;
+    return Math.atan2(dy, dx);
+  }
+
+
+
+
+
+
+
+
+
+function drawPlayer(playercurrentFrame) {    
+
+    let sourceX =0;
+
+    const spriteWidth = 32//playerSprite.width / numberOfFrames; 
+    const spriteHeight = 32 //playerSprite.height / numberOfFrames; 
+
+    sourceX = playercurrentFrame * spriteWidth
+
+    // Load and draw the current weapon sprite
+  let weaponSprite = new Image();
+  weaponSprite.src = player.currentWeapon.sprite;
+  
+  // Adjust weapon position relative to player
+  let weaponX = player.x + player.size / 60 - 10; // Example adjustment
+  let weaponY = player.y + player.size / 60 - 5; // Example adjustment
+
+  // Add properties for reloading animation tracking
+
+
+
+  const mousePos = getMousePosInWorld(canvas, {clientX: mouse.x, clientY: mouse.y}); // Assuming 'mouse' holds the current mouse position
+  const angleToMouse = getAngleToMouse(player.x + player.size / 2, player.y + player.size / 2, mousePos.x, mousePos.y);
+
+
+
+
+
+
+
+    drawHpBar(player.x+25, player.y+12 - 10, 30, 5, player.hp / player.maxHp, 'lime');
+   
+    if (player.isDodging) {
+        playerNumberOfframes = 9
+        ctx.drawImage(
+            playerSprite, 
+            sourceX , 96, // Source X, Y 
+            spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+            player.x , player.y, 
+            player.size, player.size
+        ); 
+
+
+}else if(player.isWalking){    
+    playerNumberOfframes = 8;
+  //걷고있는 상태
+    if(player.lookingRight){
+        ctx.save(); 
+        ctx.scale(1, 1); 
+
+        if(player.isAttacking){
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 32, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * 1, player.y, 
+                player.size, player.size
+            ); 
+        }else{
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 32, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * 1, player.y, 
+                player.size, player.size
+            );  
+        }
+
+        ctx.restore(); 
+    }else{
+        ctx.save(); 
+        ctx.scale(-1, 1); 
+        if(player.isAttacking){
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 32, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * -1 - 85, player.y, 
+                player.size, player.size      ); 
+        }else{
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 32, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * -1 - 85, player.y, 
+                player.size, player.size
+            ); 
+        }
+        ctx.restore(); 
+    }
+
+}else {//idel상태
+
+    playerNumberOfframes = 6;
+    if(player.lookingRight){
+        ctx.save(); 
+        ctx.scale(1, 1); 
+        if(player.isAttacking){
+
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 0, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * 1, player.y, 
+                player.size, player.size
+            );
+        }else{
+                    ctx.drawImage(
+                        playerSprite, 
+                        sourceX, 0, // Source X, Y 
+                        spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                        player.x * 1, player.y, 
+                        player.size, player.size
+                    ); 
+        }
+        ctx.restore();
+
+    }else{
+        ctx.save(); 
+        ctx.scale(-1, 1); 
+                
+                
+        if(player.isAttacking){
+            
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 0, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * -1 - 85, player.y, 
+                player.size, player.size
+            ); 
+
+        }else{
+            ctx.drawImage(
+                playerSprite, 
+                sourceX, 0, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                player.x * -1 - 85, player.y, 
+                player.size, player.size
+            ); 
+        }
+
+
+
+        ctx.restore(); 
+    }
+
+    // colisionCheck
+   /*
+    ctx.drawImage(
+        playerSprite, 
+        playercurrentFrame * spriteWidth, 0, // Source X, Y 
+        spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+        PlayercollisionX, PlayercollisionY, 
+        PlayercollisionSize, PlayercollisionSize
+    ); 
+*/
+}
+
+
+if(player.lookingRight){
+    let sourceX_1 = (playercurrentFrame) * 512;
+    
+
+    ctx.save(); 
+    ctx.scale(1, 1); 
+  
+    if (player.isReloadingWeapon) {
+
+        let reloadSprite = new Image();
+        reloadSprite.src = player.currentWeapon.reloadSprite;
+        ctx.drawImage(reloadSprite, sourceX_1, 0, 512, 512, weaponX-5, weaponY+10, 120, 120); // Example values
+       
+
+    } else {
+        if(player.isWalking){
+        
+        
+            if(player.isAttacking){
+            ctx.drawImage(weaponSprite, weaponX+playercurrentFrame*(player.maxShootCooldown*0.05), weaponY-1*(Math.random(0.05)));
+            }else{
+            ctx.drawImage(weaponSprite, weaponX+5*(playercurrentFrame*0.1), weaponY+5);
+            }   
+        
+
+        }else{
+        if(player.isAttacking){
+            ctx.drawImage(weaponSprite, weaponX+playercurrentFrame*(player.maxShootCooldown*0.05), weaponY-1*(Math.random(0.05)));
+        }else{
+        ctx.drawImage(weaponSprite, weaponX+5, weaponY+60*(playercurrentFrame*0.025)+7);
+        }
+        }
+      }
+
+ 
+ 
+
+    ctx.restore(); 
+}
+else{
+    ctx.save(); 
+    ctx.scale(-1, 1); 
+    let weaponExLocat =weaponX* -1 - 95;
+    let sourceX_1 = (playercurrentFrame) * 512;
+
+
+
+     
+    if (player.isReloadingWeapon) {
+
+        let reloadSprite = new Image();
+        reloadSprite.src = player.currentWeapon.reloadSprite;
+        ctx.drawImage(reloadSprite, sourceX_1, 0, 512, 512, weaponExLocat-5, weaponY+10, 120, 120); // Example values
+       
+
+    } else {
+        if(player.isWalking){
+        
+        
+            if(player.isAttacking){
+            ctx.drawImage(weaponSprite, weaponExLocat+playercurrentFrame*(player.maxShootCooldown*0.05), weaponY-1*(Math.random(0.05)));
+            }else{
+            ctx.drawImage(weaponSprite, weaponExLocat+5*(playercurrentFrame*0.1), weaponY+5);
+            }   
+        
+
+        }else{
+        if(player.isAttacking){
+            ctx.drawImage(weaponSprite, weaponExLocat+playercurrentFrame*(player.maxShootCooldown*0.05), weaponY-1*(Math.random(0.05)));
+        }else{
+        ctx.drawImage(weaponSprite, weaponExLocat+5, weaponY+60*(playercurrentFrame*0.025)+7);
+        }
+        }
+      }
+
+
+    
+    ctx.restore(); 
+}
+
+}
+
+
+
+
+
+
+
+
+
+function updateCollisionBox() {
+    PlayercollisionX = player.x + 13;
+    PlayercollisionY = player.y + 13;
+    PlayercollisionSize = player.size - SpriteColisionGap;
+}
+
+
+function performDodge(currentTime) {
+    if (player.dodgeCharges > 0) {
+        // Use a dodge charge
+        player.dodgeCharges--;
+        player.isDodging = true;
+        player.lastDodgeTime = currentTime; // Update the time since last dodge
+
+        setTimeout(() => {
+            player.isDodging = false; // End of dodge - vulnerable again
+            // You can trigger tail particle generation here if desired
+        }, 500); // Dodge duration, adjust as needed
+
+        // Start recharge timer if it's not already running and if not at max charges
+        if (player.dodgeCharges < player.maxDodgeCharges && !player.dodgeRechargeTimer) {
+            startDodgeRecharge();
+        }
+    }
+
+    
+}
+
+
+
+function startDodgeRecharge() {
+    player.dodgeRechargeTimer = setInterval(() => {
+        if (player.dodgeCharges < player.maxDodgeCharges) {
+            player.dodgeCharges++;
+            //console.log(`Dodge Charge Recharged: ${player.dodgeCharges}/${player.maxDodgeCharges}`);
+        }
+        // Stop the timer if the charges are full
+        if (player.dodgeCharges >= player.maxDodgeCharges) {
+            clearInterval(player.dodgeRechargeTimer);
+            player.dodgeRechargeTimer = null; // Reset the timer
+        }
+    }, player.dodgeRechargeTime);
+}
+
+function updateEntities(array) {
+    array.forEach((entity, index) => {
+        entity.x += entity.velocityX;
+        entity.y += entity.velocityY;
+
+        // Remove if off-screen
+        if (entity.x < 0 || entity.x > gameWorld.width || entity.y < 0 || entity.y > gameWorld.height) {
+            array.splice(index, 1);
+        }
+    });
+}
+
+function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tailColor2, tailColor3) {
+    
+    array.forEach(bullet => {
+        ctx.shadowColor = glowcolor;   // Add a red glow
+        ctx.shadowBlur = 15;       // Adjust the blur amount for the desired glow size
+      
+        const tailColors = [tailColor1, tailColor2, tailColor3]; // Example: shades of red
+
+
+        const tailLength = 35; // Total length of the tail
+        const partLength = tailLength / 3; // Length of each part of the tail
+        const tailWidth = bulletTailThicc; // Width of the tail
+        
+        const angle = Math.atan2(bullet.velocityY, bullet.velocityX);
+
+       // Calculate the starting point of the tail
+       let tailStartX = bullet.x - Math.cos(angle) * bullet.size / 2;
+       let tailStartY = bullet.y - Math.sin(angle) * bullet.size / 2;
+       
+       ctx.lineWidth = tailWidth;
+
+
+    // Draw each part of the tail
+    for (let i = 0; i < 3; i++) {
+        // Set color for this part of the tail
+        ctx.strokeStyle = tailColors[i];
+
+        // Calculate the position of this part of the tail
+        const partStartX = tailStartX - Math.cos(angle) * partLength * i;
+        const partStartY = tailStartY - Math.sin(angle) * partLength * i;
+        const partEndX = partStartX - Math.cos(angle) * partLength;
+        const partEndY = partStartY - Math.sin(angle) * partLength;
+
+        // Draw this part of the tail
+        ctx.beginPath();
+        ctx.moveTo(partStartX, partStartY);
+        ctx.lineTo(partEndX, partEndY);
+        ctx.stroke();
+    }
+
+   
+        // Draw the bullet itself
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(bullet.x, bullet.y, bullet.size / 2, 0, Math.PI * 2, false);
+        ctx.fill();
+        ctx.shadowBlur = 0;  // Reset shadow properties for other drawing
+
+    });
+}
+
+function updateEnemies(deltaTime) {
+    enemies.forEach((enemy, index) => {
+
+ // Decrement the time until the next attack
+ if (enemy.timeUntilNextAttack > 0) {
+    enemy.timeUntilNextAttack -= deltaTime;
+}
+
+        // Check if the enemy is ready to attack
+        if (enemy.timeUntilNextAttack <= 0) {
+            // Enemy attacks
+            createBullet(enemyBullets, enemy.x + enemy.size / 2, enemy.y + enemy.size / 2, player.x, player.y);
+            // Reset the attack cooldown
+            enemy.timeUntilNextAttack = enemy.attackCooldown;
+        }
+
+
+        if (enemy.hp <= 0) {
+            enemies.splice(index, 1);
+            totalKills++;
+
+            spawnEnemy()
+
+            gainXP(20); // Example XP gain
+
+        } else {
+            const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
+            enemy.x += Math.cos(angle) * enemy.speed;
+            enemy.y += Math.sin(angle) * enemy.speed;
+        }
+    });
+}
+
+
+function drawEnemies() {
+
+    enemies.forEach(enemy => {   
+        
+    let sourceX =0;
+
+    const spriteWidth = basicenEmySprite.width / numberOfFrames; 
+    const spriteHeight = basicenEmySprite.height / numberOfFrames; 
+
+    sourceX = currentFrame * spriteWidth
+
+       
+        if (enemy.justHit) {
+            const timeSinceHit = performance.now() - enemy.hitTime;
+
+            if (timeSinceHit < 100) {
+              
+
+                drawHpBar(enemy.x, enemy.y - 10, enemy.size, 5, enemy.hp / enemy.maxHp, 'red');
+
+                ctx.drawImage(
+                    basicenEmySprite, 
+                        sourceX , 1024, // Source X, Y 
+                        spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                        enemy.x , enemy.y, 
+                        enemy.size, enemy.size
+                );     
+                ctx.restore
+                
+            
+            
+            
+            
+            } else {
+                // Reset justHit after the effect duration has passed
+                enemy.justHit = false;
+            }
+        }else{
+       
+    
+        drawHpBar(enemy.x, enemy.y - 10, enemy.size, 5, enemy.hp / enemy.maxHp, 'red');
+      
+        ctx.drawImage(
+                basicenEmySprite, 
+                sourceX , 0, // Source X, Y 
+                spriteWidth, spriteHeight,     // Source width, height (assuming 32x32 frames)
+                enemy.x , enemy.y, 
+                enemy.size, enemy.size
+        ); 
+    
+    }
+        
+
+       
+    });
+}
+
+function drawHpBar(x, y, width, height, fraction, colorOfHP) {
+    const borderWidth = 2; // Thickness of the border
+
+    // Draw the border
+    ctx.fillStyle = 'black';
+    ctx.fillRect(x - borderWidth, y - borderWidth, width + borderWidth * 2, height + borderWidth * 2);
+
+    ctx.fillStyle = 'gray';
+    ctx.fillRect(x, y, width, height);
+    ctx.fillStyle = colorOfHP;
+    ctx.fillRect(x, y, width * fraction, height);
+
+
+}
+
+
+
+function handleCollisions() {
+    playerBullets.forEach((bullet, bulletIndex) => {
+        enemies.forEach((enemy, enemyIndex) => {
+            if (bullet.x < enemy.x + enemy.size &&
+                bullet.x + bullet.size > enemy.x &&
+                bullet.y < enemy.y + enemy.size &&
+                bullet.y + bullet.size > enemy.y) {
+                playerBullets.splice(bulletIndex, 1);
+                enemies[enemyIndex].hp -= player.attackDamage; // Decrease enemy HP by 10
+                    
+            enemies[enemyIndex].justHit = true;
+            enemies[enemyIndex].hitTime = performance.now();
+
+            }
+        });
+    });
+
+    enemyBullets.forEach((bullet, bulletIndex) => {
+        if (bullet.x < PlayercollisionX + PlayercollisionSize &&
+            bullet.x + bullet.size > PlayercollisionX &&
+            bullet.y < PlayercollisionY + PlayercollisionSize &&
+            bullet.y + bullet.size > PlayercollisionY) {
+            enemyBullets.splice(bulletIndex, 1);
+
+            if(!player.isDodging){
+            player.hp -= 10; // Decrease player HP by 10
+            }
+
+            if (player.hp <= 0) {
+                alert("Game Over!");
+                document.location.reload();
+            }
+        }
+ 
+    });
+}
+
+
+function calculateExpToNextLevel(level) {
+    return Math.floor(100 * Math.pow(1.5, level - 1)); // Example formula
+}
+/*
+function increaseStat(stat) {
+    switch (stat) {
+        case 'maxHP':
+            player.maxHp += 20; // Adjust value as needed
+            break;
+        case 'maxAmmo':
+            player.maxAmmo += 5; // Adjust value as needed
+            break;
+        case 'reloadingCooldown':
+            player.maxReloadingCooldown -= 200; // Adjust value as needed, making sure it doesn't become too low
+            break;
+        case 'playerShootCooldown':
+            player.maxShootCooldown -= 5; // Adjust value as needed
+            break;
+        case 'attackDamage':
+            player.attackDamage += 5; // Adjust value as needed
+            break;
+        case 'speed':
+            player.speed += 0.5; // Adjust value as needed
+            break;
+        default:
+            console.log('Invalid stat');
+            break;
+    }
+    // Close the level-up window here, or reset state to continue game
+}*/
+
+
+
+function gainExp(amount) {
+    player.exp += amount;
+    if (player.exp >= player.expToNextLevel) {
+        player.level++;
+        player.exp -= player.expToNextLevel;
+        player.expToNextLevel = calculateExpToNextLevel(player.level); // Implement this based on your game's needs
+        openLevelUpOptions(); // Function to display level up options
+    }
+}
+
+
+function generateRandomRoom() {
+    // Generate random dimensions for the room
+    const roomWidth = Math.floor(Math.random() * (maxRoomWidth - minRoomWidth + 1)) + minRoomWidth;
+    const roomHeight = Math.floor(Math.random() * (maxRoomHeight - minRoomHeight + 1)) + minRoomHeight;
+
+    // Define the new game world size based on the room
+    gameWorld.width = roomWidth;
+    gameWorld.height = roomHeight;
+
+    // Optionally, generate features like obstacles or enemy spawn points
+
+    // Reset player position to the start of the room
+    player.x = startingXPosition;
+    player.y = startingYPosition;
+
+    // If needed, clear previous room's entities like bullets and enemies
+    playerBullets.length = 0;
+    enemyBullets.length = 0;
+    enemies.length = 0; // Remember to repopulate enemies as appropriate for the room
+
+    console.l
+
+}
+
+
+
+function gameLoop(timestamp) {
+    updateGameTime(); // Update the game time each frame
+
+    
+    if (!timestamp) {  // Check if lastTime is undefined (first run)
+        timestamp = 0; 
+    }
+    
+
+    const deltaTime = timestamp - lastTime;
+    lastTime = timestamp;
+
+
+    animationTimer += deltaTime * 3;
+    if (animationTimer >= frameInterval) {
+        animationTimer = 0; // Subtract excess for smooth animation
+        currentFrame++; // Increment the frame
+        PlayercurrentFrame++;
+
+
+        if (currentFrame >= numberOfFrames) {
+            currentFrame = 0; // Reset for looping
+        }
+
+
+        if(PlayercurrentFrame >= playerNumberOfframes){
+            PlayercurrentFrame=0;
+        }
+
+
+    }
+    
+
+    update(deltaTime);    
+    updateCollisionBox();
+
+    draw(currentFrame);
+    updateParticles();
+    drawParticles(ctx);
+
+
+
+
+
+
+
+
+
+
+
+
+    requestAnimationFrame(gameLoop);
+
+}
+
+// Spawn initial enemies
+for (let i = 0; i < 5; i++) {
+    spawnEnemy();
+}
+
+gameLoop();

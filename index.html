@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UM</title>
+    <style>
+        * {
+          box-sizing: border-box;
+        }
+        html, body { 
+          margin: 0;
+          padding: 0;
+          width: 100vw;
+          height: 100vh;
+          overflow: hidden;
+          display: flex; 
+          flex-direction: row;
+          justify-content: center; 
+          align-items: center; 
+          gap: 20px;
+          background-color: #111111; 
+          color: #eee;
+          font-family: Arial, sans-serif;
+        }
+        
+        canvas { 
+         max-width: calc(100vw - 200px);
+         max-height: 100vh;
+         object-fit: contain;
+         border: 2px solid #333;
+         background-color: #222;
+         image-rendering: pixelated;
+         image-rendering: crisp-edges;
+        }
+
+        #stats-sidebar {
+          width: 160px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 15px;
+          user-select: none;
+        }
+
+        .original-info-box {
+          width: 130px;
+          background: #050505;
+          border: 2px solid #000;
+          padding: 8px;
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+        }
+
+        .hp-bar-outer {
+          width: 100%;
+          height: 18px;
+          background: #555;
+          border: 2px solid #000;
+        }
+
+        .hp-bar-inner {
+          height: 100%;
+          width: 100%;
+          background: #00FF00;
+        }
+
+        .ammo-bar-outer {
+          width: 100%;
+          height: 14px;
+          background: rgba(255, 255, 255, 0.2);
+          border: 1px solid #000;
+        }
+
+        .ammo-bar-inner {
+          height: 100%;
+          width: 100%;
+          background: #2BB0B9;
+        }
+
+        .dodge-cooldown-bar {
+          width: 100%;
+          height: 10px;
+          background: #555;
+        }
+        .dodge-cooldown-fill {
+          height: 100%;
+          width: 100%;
+          background: #00FF00;
+        }
+
+        .dodge-boxes {
+          display: flex;
+          justify-content: space-between;
+          gap: 3px;
+        }
+
+        .dodge-box {
+          flex: 1;
+          height: 18px;
+          background: #00FF00;
+          border: 1px solid #000;
+        }
+
+        .dodge-box.used {
+          background: #444444;
+        }
+
+        .stats-list {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 6px;
+          font-size: 14px;
+          color: #FFFF00;
+          font-weight: bold;
+          text-align: center;
+        }
+
+        .despawn-btn, .hitbox-btn {
+          width: 130px;
+          margin-top: 8px;
+          padding: 8px 10px;
+          background: #800000;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 0;
+          font-weight: bold;
+          font-size: 13px;
+          cursor: pointer;
+          box-shadow: none;
+          outline: none;
+        }
+        .despawn-btn:hover {
+          background: #A00000;
+        }
+        .despawn-btn:active {
+          background: #600000;
+        }
+
+        .hitbox-btn {
+          background: #333333;
+        }
+        .hitbox-btn:hover {
+          background: #444444;
+        }
+        .hitbox-btn.active {
+          background: #008000;
+        }
+
+        .wall-timer-btn {
+          width: 130px;
+          margin-top: 8px;
+          padding: 8px 10px;
+          background: #444444;
+          color: #FFFFFF;
+          border: none;
+          border-radius: 0;
+          font-weight: bold;
+          font-size: 13px;
+          cursor: pointer;
+          box-shadow: none;
+          outline: none;
+        }
+        .wall-timer-btn:hover {
+          background: #555555;
+        }
+        .wall-timer-btn.active {
+          background: #CC6600;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="1200" height="900"></canvas>
+    
+    <div id="stats-sidebar">
+        <div class="original-info-box">
+            <div class="hp-bar-outer">
+                <div id="hp-bar-fill" class="hp-bar-inner"></div>
+            </div>
+
+            <div class="ammo-bar-outer">
+                <div id="ammo-bar-fill" class="ammo-bar-inner"></div>
+            </div>
+
+            <div class="dodge-cooldown-bar">
+                <div class="dodge-cooldown-fill"></div>
+            </div>
+
+            <div id="dodge-box-container" class="dodge-boxes">
+                <div class="dodge-box"></div>
+                <div class="dodge-box"></div>
+                <div class="dodge-box"></div>
+                <div class="dodge-box"></div>
+                <div class="dodge-box"></div>
+            </div>
+        </div>
+
+        <div class="stats-list">
+            <div>Max HP : <span id="stat-maxhp">30</span></div>
+            <div>Max Ammo : <span id="stat-maxammo">10</span></div>
+            <div>Reload Speed : <span id="stat-reload">2500</span></div>
+            <div>Fire Rate : <span id="stat-firerate">35</span></div>
+            <div>Damage : <span id="stat-damage">10</span></div>
+            <div>Speed : <span id="stat-speed">4.5</span></div>
+        </div>
+
+        <button id="despawnEnemiesBtn" class="despawn-btn">NoBots</button>
+        <button id="toggleHitboxBtn" class="hitbox-btn">showHitbox</button>
+        <button id="toggleWallTimerBtn" class="wall-timer-btn">HoldWalls</button>
+    </div>
+
+    <script src="game.js"></script>
+</body>
+</html>

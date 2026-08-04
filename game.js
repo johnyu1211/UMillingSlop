@@ -4896,10 +4896,12 @@ function drawEnemies() {
     const viewBottom = camera.y + canvas.height + margin;
 
     enemies.forEach(enemy => {   
-        // Viewport Culling: Skip rendering enemies completely outside screen view for zero lag
-        if (enemy.x + enemy.size < viewLeft || enemy.x > viewRight ||
-            enemy.y + enemy.size < viewTop || enemy.y > viewBottom) {
-            return;
+        // Viewport Culling: Skip rendering enemies completely outside screen view for zero lag (EXCEPT Laser enemies like green_laser_eye!)
+        if (enemy.bodyType !== 'green_laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'laser_eye') {
+            if (enemy.x + enemy.size < viewLeft || enemy.x > viewRight ||
+                enemy.y + enemy.size < viewTop || enemy.y > viewBottom) {
+                return;
+            }
         }
 
         const alpha = (enemy.fadeAlpha !== undefined) ? enemy.fadeAlpha : 1.0;

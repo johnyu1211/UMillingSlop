@@ -2571,9 +2571,9 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false, isTw
         const isRedBuff = blueBuffTimer > 0;
         const redLvl = player.redBoxLevel || 0;
 
-        // Level 1: Fiery Magma Red-Orange Color + Intense Flame Glow + Burn DoT
+        // Match exact pure clean lobby bullet color (0 glow)
         const finalColor = (isRedBuff && redLvl >= 1) ? '#FF3D00' : (player.currentWeapon.bulletColor || "#FFF4B8");
-        const flameGlowColor = (isRedBuff && redLvl >= 1) ? '#FF8800' : null;
+        const flameGlowColor = null; // 100% Completely remove in-game bullet glow!
         const isBurnBullet = isRedBuff && redLvl >= 1;
 
         let shotCount = player.currentWeapon.ammoShotNum || 1;

@@ -4953,6 +4953,9 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
         ctx.drawImage(basicenEmySprite, srcX, srcY, srcW, srcH, 0, 0, drawS, drawS);
         ctx.restore();
 
+        // Bottom-Left (x3, y3) gets Pos 1 (Original Bottom-Left Slice)
+        ctx.drawImage(basicenEmySprite, srcX, srcY, srcW, srcH, x3, y3, drawS, drawS);
+
         // Bottom-Right (x4, y4) gets Pos 2 (flipped H)
         ctx.save();
         ctx.translate(x4 + drawS, y4);

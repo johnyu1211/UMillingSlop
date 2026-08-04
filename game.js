@@ -3094,7 +3094,8 @@ function update(deltaTime) {
     }
 
     if (gameState === 'startingRoom') {
-        if (enemies.length === 0) {
+        const isLobbyValid = enemies.length === 2 && enemies[0].bodyType === 'machinegun_humanoid' && enemies[1].bodyType === 'assault_humanoid';
+        if (!isLobbyValid) {
             spawnLobbyHumanoids();
         }
         checkDoorEntry();

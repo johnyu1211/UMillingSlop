@@ -4661,12 +4661,12 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
-                    // Long Firing Phase (4.5s): Continuous Lime Green Beam (#00FF66) with fast tracking (0.048)!
+                    // Long Firing Phase (4.5s): Continuous Lime Green Beam (#00FF66) with balanced tracking (0.038)!
                     if (!isPaused && !levelUpState) {
                         let diff = angleToPlayer - enemy.currentBeamAngle;
                         while (diff < -Math.PI) diff += Math.PI * 2;
                         while (diff > Math.PI) diff -= Math.PI * 2;
-                        enemy.currentBeamAngle += diff * 0.048; // Fast 0.048 tracking speed (Faster than Blue 0.030)!
+                        enemy.currentBeamAngle += diff * 0.038; // Balanced 0.038 tracking speed!
                     }
 
                     const fireAngle = enemy.currentBeamAngle;

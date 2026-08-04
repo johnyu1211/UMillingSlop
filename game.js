@@ -2354,16 +2354,30 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
         tier = 2; // Veteran (Green)
     }
 
-    // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
-    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye'];
+    // Level-based Tiered Enemy Unlocking Pool (Level 1 starts with ONLY basic mutants!)
+    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso'];
+
+    if (pLvl >= 2) {
+        basicBodyTypes.push('three_head', 'split_mutant');
+    }
+    if (pLvl >= 3) {
+        basicBodyTypes.push('laser_eye');
+    }
+    if (pLvl >= 4) {
+        basicBodyTypes.push('cannon_laser_head');
+    }
+    if (pLvl >= 5) {
+        basicBodyTypes.push('green_laser_eye');
+    }
+
     let bodyType = forcedBodyType || basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
-    // Rare Spawn Logic: 10% Rare Chance to spawn Machinegun Humanoid!
-    if (!forcedBodyType && Math.random() < 0.10) {
+    // Rare Spawn Logic: 10% Rare Chance to spawn Machinegun Humanoid ONLY AFTER Level 4!
+    if (!forcedBodyType && pLvl >= 4 && Math.random() < 0.10) {
         bodyType = 'machinegun_humanoid';
     }
 
-    // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
+    // 15% Rare Chance to spawn Kamikaze Exploders if player level 3+ unlocked!
     if (!forcedBodyType && bodyType !== 'machinegun_humanoid' && Math.random() < 0.15) {
         if (pLvl >= 5 && Math.random() < 0.5) {
             bodyType = 'red_kamikaze_exploder';

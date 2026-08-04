@@ -2509,7 +2509,7 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
         speedMult *= 1.0;
         shotCount = 3;     // Rapid 3-burst shooter
         customSprite = 'OLD/RoBChar.png';
-        colorFilter = 'hue-rotate(180deg) saturate(240%) contrast(1.1)'; // Turn Mint/Cyan LED into Crimson Red LED!
+        colorFilter = 'hue-rotate(180deg) saturate(154%) brightness(86%)'; // Exact User Parameters: Hue 180, Saturation 154%, Brightness -14% (86%)!
     } else if (bodyType === 'assault_humanoid') {
         sizeMult *= 1.25;
         hpMult *= 2.5;

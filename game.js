@@ -1238,9 +1238,9 @@ const mouse = {
 let zoomLevel = 1.08; // Enlarged, immersive camera view (1.08x)
 let lastTime = performance.now(); // Initialize before the game loop
 
-const enemySpeed = 1.5; //enemyMoveSpeed for test it was 0.5
+const enemySpeed = 1.15; // Relaxed early game enemy move speed!
 const enemySize = 90;
-const enemyHp = 30;
+const enemyHp = 16;
 
 const playerBullets = [];
 const enemyBullets = [];
@@ -2564,7 +2564,7 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
         colorFilter = 'none';
     }
 
-    const baseEnemyHp = 30 + (pLvl - 1) * 8;
+    const baseEnemyHp = 16 + (pLvl - 1) * 5; // Softened early HP (16 HP base)!
     const finalSize = Math.floor((enemySize || 45) * sizeMult);
     const finalHp = (bodyType === 'green_laser_eye') ? 1 : Math.max(1, Math.floor(baseEnemyHp * hpMult));
 
@@ -4608,8 +4608,8 @@ function updateEnemies(deltaTime) {
         }
     }
 
-    // Safety Auto-Respawn: Ensure field active enemies count safely refilled frame-by-frame (Only during active gameStarted phase!)
-    const targetMonsterCount = 6;
+    // Dynamic Early Game Spawning: Starts with 3 active monsters, scales smoothly to 6 as player levels up!
+    const targetMonsterCount = Math.min(6, 3 + Math.floor(((player && player.level) || 1) / 2));
     if (gameState === 'gameStarted' && enemies.length < targetMonsterCount) {
         spawnEnemy();
     }

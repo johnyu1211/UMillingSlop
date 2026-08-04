@@ -4794,8 +4794,6 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 const frameW = 514;
                 const frameH = 514;
                 const totalCols = 6;
-                const animIndex = Math.floor(Date.now() / 110) % totalCols;
-
                 let row = 2; // Row 2 (y=1028): Move/Standard Animation
 
                 if (enemy.bodyType === 'machinegun_humanoid') {
@@ -4811,6 +4809,10 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                         row = 4;
                     }
                 }
+
+                // Slower animation tempo for non-attack walking state (230ms per frame vs 110ms for attack)!
+                const frameSpeed = (row === 3 || row === 4) ? 110 : 230;
+                const animIndex = Math.floor(Date.now() / frameSpeed) % totalCols;
 
                 const srcX = animIndex * frameW;
                 const srcY = row * frameH;

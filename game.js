@@ -2382,6 +2382,7 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
     let validPos = !!presetPos;
     let attempts = 0;
 
+    const pCenterX = player.x + (player.size ? player.size / 2 : 45);
     const pCenterY = player.y + (player.size ? player.size / 2 : 45);
 
     while (!validPos && attempts < 40) {

@@ -38,6 +38,25 @@ let greyAfterimages = [];
 let redAfterimages = [];
 let yellowBulletTrails = [];
 
+// High-Performance Bullet Object Pool Engine (Prevents GC Lag)
+const MAX_BULLET_POOL = 600;
+const bulletPool = [];
+for (let i = 0; i < MAX_BULLET_POOL; i++) {
+    bulletPool.push({ active: false, x: 0, y: 0, velocityX: 0, velocityY: 0, size: 7 });
+}
+
+function getPooledBullet() {
+    for (let i = 0; i < MAX_BULLET_POOL; i++) {
+        if (!bulletPool[i].active) {
+            bulletPool[i].active = true;
+            return bulletPool[i];
+        }
+    }
+    // If pool is full, recycle oldest active bullet
+    bulletPool[0].active = true;
+    return bulletPool[0];
+}
+
 function updateAndDrawYellowBulletTrails(ctx) {
     if (yellowBulletTrails.length === 0) return;
 
@@ -4010,21 +4029,32 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
             }
         }
 
-        // Draw the bullet itself
+        // Draw individual special bullets (e.g. GayShot)
         if (bullet.isGayShot) {
             const rainbowHue = (performance.now() * 0.45 + (bullet.dnaIndex || 0) * 45) % 360;
             const rainbowColor = `hsl(${rainbowHue}, 100%, 65%)`;
             ctx.fillStyle = rainbowColor;
             ctx.shadowColor = `hsl(${rainbowHue}, 100%, 60%)`;
             ctx.shadowBlur = 8;
-        } else {
-            ctx.fillStyle = bullet.color || color;
+            ctx.beginPath();
+            ctx.arc(bullet.x, bullet.y, (bullet.size || 7) / 2, 0, Math.PI * 2, false);
+            ctx.fill();
+            ctx.shadowBlur = 0;
         }
-        ctx.beginPath();
-        ctx.arc(bullet.x, bullet.y, (bullet.size || 7) / 2, 0, Math.PI * 2, false);
-        ctx.fill();
-        ctx.shadowBlur = 0;  // Reset shadow properties
     });
+
+    // Single-Pass Batch Draw Call for standard bullets
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    for (let i = 0; i < array.length; i++) {
+        const bullet = array[i];
+        if (!bullet.isGayShot) {
+            const r = (bullet.size || 7) / 2;
+            ctx.moveTo(bullet.x + r, bullet.y);
+            ctx.arc(bullet.x, bullet.y, r, 0, Math.PI * 2);
+        }
+    }
+    ctx.fill();
 
     // Render Hitbox Debug Outlines inside world camera transform context
     renderHitboxes(ctx);

@@ -997,6 +997,14 @@ const allLevelUpOptions = [
         } 
     },
     { 
+        title: '💥 Mobile Fire', 
+        desc: 'Vector SMG: Firing build-up no longer resets while moving! Keeps extra bullet count as long as attack is held!', 
+        condition: () => (player.stationaryFireSelected && !player.mobileFireSelected),
+        effect: () => { 
+            player.mobileFireSelected = true;
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2968,18 +2976,22 @@ function update(deltaTime) {
 
     if (keys['w'] || keys['W'] || keys['a'] || keys['A'] || keys['s'] || keys['S']|| keys['d'] || keys['D']) {
         player.isWalking = true; 
-        player.stationaryTimer = 0;
-        player.stationaryBonusBullets = 0;
-    } else {
-        player.isWalking = false;
-        if (player.stationaryFireSelected && player.isAttacking) {
-            player.stationaryTimer = (player.stationaryTimer || 0) + (deltaTime || 16);
-            // Every 550ms standing still while firing adds +1 extra bullet! (Up to +5 extra bullets)
-            player.stationaryBonusBullets = Math.min(5, Math.floor(player.stationaryTimer / 550));
-        } else {
+        if (!player.mobileFireSelected) {
             player.stationaryTimer = 0;
             player.stationaryBonusBullets = 0;
         }
+    } else {
+        player.isWalking = false;
+    }
+
+    // Accumulate extra bullet count stack while firing (Mobile Fire keeps stack while walking)
+    if (player.stationaryFireSelected && player.isAttacking) {
+        player.stationaryTimer = (player.stationaryTimer || 0) + (deltaTime || 16);
+        // Every 550ms firing maintained adds +1 extra bullet! (Up to +5 extra bullets)
+        player.stationaryBonusBullets = Math.min(5, Math.floor(player.stationaryTimer / 550));
+    } else {
+        player.stationaryTimer = 0;
+        player.stationaryBonusBullets = 0;
     }
 
     player.x = Math.max(0, Math.min(gameWorld.width - player.size, player.x));

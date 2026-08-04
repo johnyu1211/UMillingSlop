@@ -2648,8 +2648,8 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false) {
                 glowColor: flameGlowColor,
                 isBurnBullet: isBurnBullet
             });
-        } else if (player.straightShotSelected && isShotgun) {
-            // Straight Shot: All pellets fire parallel in a side-by-side wall alignment with spacing!
+        } else if (player.straightShotSelected && (isShotgun || isVector)) {
+            // Straight Shot: All bullets fire parallel in a side-by-side wall alignment with spacing!
             const perpAngle = shootAngle + Math.PI / 2;
             const spacing = 11; // 11px spacing between parallel side-by-side pellets
             const totalWidth = (shotCount - 1) * spacing;

@@ -4983,11 +4983,13 @@ function drawEnemies() {
             ctx.filter = enemy.colorFilter;
         }
 
-        // Apply Horizontal Facing Flip safely inside isolated drawEnemies loop!
+        // Apply Horizontal Facing Flip safely inside isolated drawEnemies loop! (RoBChar sprite default facing is opposite!)
         const pCenterX = player.x + 45;
         const eCenterX = enemy.x + enemy.size / 2;
-        const facingLeft = pCenterX < eCenterX;
-        if (facingLeft && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'green_laser_eye') {
+        const isHumanoid = (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid');
+        const shouldFlip = isHumanoid ? (pCenterX > eCenterX) : (pCenterX < eCenterX);
+
+        if (shouldFlip && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'green_laser_eye') {
             ctx.translate(eCenterX, enemy.y + enemy.size / 2);
             ctx.scale(-1, 1);
             ctx.translate(-eCenterX, -(enemy.y + enemy.size / 2));

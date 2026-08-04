@@ -2845,22 +2845,23 @@ function drawParticles(ctx) {
     for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
         if (p.isRedFadingRectTrail) {
-            // Linear Fading Red Rectangular Afterimage (Front bright red, tail fading to transparent!)
+            // Linear Fading Red Rectangular Afterimage (Behind enemy layer, slender width, long extended tail!)
             const maxLife = p.maxLifeSpan || 20;
             const progressAlpha = Math.max(0, Math.min(1.0, p.lifeSpan / maxLife));
             ctx.save();
             ctx.translate(p.x, p.y);
             ctx.rotate(p.angle || 0);
 
-            const w = p.width || 45;
-            const h = p.height || 30;
+            const w = p.width || 125;  // Extended long length behind
+            const h = p.height || 16;  // Compact slender width (smaller size)
 
-            const grad = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
-            grad.addColorStop(0, `rgba(255, 17, 51, 0)`);                   // Tail side: Transparent
-            grad.addColorStop(1.0, `rgba(255, 17, 51, ${progressAlpha * 0.9})`); // Front side (near enemy): Hot Crimson Red!
+            // Gradient: Left (-w, tail far behind) is transparent, Right (0, near enemy center) is bright crimson red!
+            const grad = ctx.createLinearGradient(-w, 0, 0, 0);
+            grad.addColorStop(0, `rgba(255, 17, 51, 0)`);                      // Far tail side: Completely Transparent
+            grad.addColorStop(1.0, `rgba(255, 17, 51, ${progressAlpha * 0.85})`); // Front side (at enemy center): Hot Crimson Red!
 
             ctx.fillStyle = grad;
-            ctx.fillRect(-w / 2, -h / 2, w, h);
+            ctx.fillRect(-w, -h / 2, w, h);
             ctx.restore();
         } else {
             const baseAlpha = (p.maxAlpha !== undefined) ? p.maxAlpha : 0.6;
@@ -3379,6 +3380,7 @@ function draw(currentFrame, deltaTime) {
         updateAndDrawRedAfterimages(ctx);
         drawPlayer(PlayercurrentFrame, deltaTime);
         drawEntities(enemyBullets, '#FFC9C9', 'red', 8, 'rgba(246,13,13,0.3)','rgba(246,13,13,0.1)','rgba(246,13,13,0.05)');
+        drawParticles(ctx); // Render particles & fading red trails BEHIND enemies!
         drawEnemies();
 
         updateAndDrawHealthPacks(ctx, deltaTime);
@@ -3394,7 +3396,6 @@ function draw(currentFrame, deltaTime) {
             player.currentWeapon.bulletTailcolor2,
             player.currentWeapon.bulletTailcolor3,
             player.dodgeCooldown);
-        drawParticles(ctx);
 
         // --- AMBIENT DARKNESS & PLAYER LANTERN LIGHT OVERLAY ---
         drawAmbientLighting(ctx);
@@ -4578,8 +4579,8 @@ function updateEnemies(deltaTime) {
                         particles.push({
                             x: enemy.x + enemy.size / 2,
                             y: enemy.y + enemy.size / 2,
-                            width: enemy.size * 0.9,
-                            height: enemy.size * 0.65,
+                            width: enemy.size * 2.8,  // Extended long length extending far behind
+                            height: enemy.size * 0.35, // Slender compact width (smaller size)
                             angle: enemy.dodgeRushAngle || 0,
                             lifeSpan: 20,
                             maxLifeSpan: 20,

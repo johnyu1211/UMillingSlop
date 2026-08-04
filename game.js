@@ -1032,7 +1032,7 @@ const allLevelUpOptions = [
         } 
     },
     { 
-        title: '💥 Twin Trigger I', 
+        title: '💥 Extra Shot I', 
         desc: 'All Weapons: Fires a fast 2nd follow-up bullet 0.1s after every shot! (Consumes 0 extra ammo)', 
         condition: () => ((player.twinTriggerLevel || 0) === 0),
         effect: () => { 
@@ -1040,7 +1040,7 @@ const allLevelUpOptions = [
         } 
     },
     { 
-        title: '💥 Twin Trigger II', 
+        title: '💥 Extra Shot II', 
         desc: 'All Weapons: Fires 2nd & 3rd follow-up bullets 0.1s & 0.2s after every shot! (Consumes 0 extra ammo)', 
         condition: () => ((player.twinTriggerLevel || 0) === 1),
         effect: () => { 

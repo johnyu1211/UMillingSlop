@@ -890,6 +890,14 @@ const allLevelUpOptions = [
     { title: '👟 Move Speed (+0.5)', desc: 'Increases player movement speed', effect: () => { player.speed += 0.5; } },
     { title: '📦 Max Ammo (+5)', desc: 'Increases magazine size & refills ammo', effect: () => { player.maxAmmo += 5; player.ammo = player.maxAmmo; } },
     { 
+        title: '💥 Shot Roll', 
+        desc: 'Shotgun Pellets +3 & Massive Recoil Shot-Roll with WASD Movement & Afterimages', 
+        effect: () => { 
+            player.shotgunPelletBonus = (player.shotgunPelletBonus || 0) + 3; 
+            player.shotgunRecoilBonus = (player.shotgunRecoilBonus || 0) + 8; 
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2445,6 +2453,18 @@ function createBullet(array, x, y, targetX, targetY) {
 
         // Level 2: +2 Extra bullets in shooting direction during red buff
         let shotCount = player.currentWeapon.ammoShotNum || 1;
+        const isShotgun = (player.currentWeapon && (player.currentWeapon.name === "winchester shotgun ww2 version" || player.currentWeapon.ammoShotNum > 1));
+        
+        if (isShotgun) {
+            shotCount += (player.shotgunPelletBonus || 0);
+
+            // Trigger Recoil Shot-Roll & Motion Afterimages!
+            const recoilForce = 13 + (player.shotgunRecoilBonus || 0);
+            player.shotRollVx = -Math.cos(shootAngle) * recoilForce;
+            player.shotRollVy = -Math.sin(shootAngle) * recoilForce;
+            player.shotRollTimer = 380; // 380ms Shot-Roll duration
+        }
+
         if (isRedBuff && redLvl >= 2) {
             shotCount += 2;
         }
@@ -2704,6 +2724,34 @@ function update(deltaTime) {
         player.y = nextY;
     }
     
+    // --- SHOT ROLL RECOIL MOTION WITH WASD FREEDOM & AFTERIMAGES ---
+    if (player.shotRollTimer > 0) {
+        player.shotRollTimer -= (deltaTime || 16);
+        
+        player.shotRollVx *= 0.88;
+        player.shotRollVy *= 0.88;
+
+        const rollNextX = player.x + player.shotRollVx;
+        const rollNextY = player.y + player.shotRollVy;
+
+        if (!isCollidingWithWalls(rollNextX, player.y, 28, 44)) {
+            player.x = rollNextX;
+        }
+        if (!isCollidingWithWalls(player.x, rollNextY, 28, 44)) {
+            player.y = rollNextY;
+        }
+
+        // Spawn Cyan Motion Afterimages for Shot Roll!
+        if (Math.random() < 0.7) {
+            blueAfterimages.push({
+                x: player.x,
+                y: player.y,
+                alpha: 0.7,
+                size: player.size
+            });
+        }
+    }
+
     if (keys['w'] || keys['W'] || keys['a'] || keys['A'] || keys['s'] || keys['S']|| keys['d'] || keys['D']) {
         player.isWalking = true; 
     } else {

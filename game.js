@@ -5290,9 +5290,11 @@ function handleCollisions() {
                 enemy.killedByPlayer = true;
                 let hitDmg = (player.attackDamage + Math.floor(Math.random() * (player.currentWeapon.additionalDamage || 5))) * count;
 
-                // Humanoid Shield Block: Activate Row 2 Shield Guard when hit during Reload Phase!
+                // Humanoid Shield Block: Activate Row 2 Shield Guard when hit ONLY during Reload Phase (NOT during Firing!)
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
-                    if (enemy.timeUntilNextAttack > 0) {
+                    const totalFiringDuration = (enemy.lastBurstCount || 23) * 65 + 250;
+                    const isFiringNow = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < totalFiringDuration);
+                    if (enemy.timeUntilNextAttack > 0 && !isFiringNow) {
                         enemy.isShieldActive = true;
                         enemy.shieldTimer = 750; // 750ms Protective Guard Posture!
                         hitDmg *= 0.15; // 85% Damage Reduction Block!
@@ -5301,7 +5303,11 @@ function handleCollisions() {
 
                 enemy.takenDamage = hitDmg;
                 enemy.hp -= hitDmg;
-                enemy.hitTime = performance.now();
+                if (enemy.isShieldActive) {
+                    enemy.hitTime = 0; // Completely suppress white hit flash when shield is active!
+                } else {
+                    enemy.hitTime = performance.now();
+                }
                 break;
             }
         }

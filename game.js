@@ -4313,12 +4313,12 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
-                // Cannon Laser Head AI: Target alignment + 1.2s HOLD before firing straight Hot Pink pulse beam!
+                // Cannon Laser Head AI: Target alignment + 0.6s HOLD before firing straight Hot Pink pulse beam!
                 if (enemy.bodyType === 'cannon_laser_head') {
                     if (enemy.timeUntilNextAttack <= 0) {
                         enemy.isFiringCannonLaser = true;
-                        enemy.cannonLaserTimer = 3200; // 1.2s track + 1.2s hold + 0.8s burst beam!
-                        enemy.timeUntilNextAttack = enemy.attackCooldown || 4200;
+                        enemy.cannonLaserTimer = 2600; // 1.2s track + 0.6s hold + 0.8s burst beam!
+                        enemy.timeUntilNextAttack = enemy.attackCooldown || 3800;
                     }
 
                     if (enemy.isFiringCannonLaser) {
@@ -4333,18 +4333,18 @@ function updateEnemies(deltaTime) {
                         const pCenterY = player.y + 45;
                         const angleToPlayer = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
 
-                        const elapsed = 3200 - enemy.cannonLaserTimer;
+                        const elapsed = 2600 - enemy.cannonLaserTimer;
                         if (elapsed < 1200) {
                             // Phase 1 (0 ~ 1.2s): Track aim angle towards player!
                             enemy.cannonAimAngle = angleToPlayer;
                             moveX = Math.cos(angleToPlayer) * curSpeed * 0.4;
                             moveY = Math.sin(angleToPlayer) * curSpeed * 0.4;
-                        } else if (elapsed < 2400) {
-                            // Phase 2 (1.2s ~ 2.4s, EXACT 1.2s HOLD): Freeze position & aim angle completely!
+                        } else if (elapsed < 1800) {
+                            // Phase 2 (1.2s ~ 1.8s, EXACT 0.6s HOLD): Freeze position & aim angle completely!
                             moveX = 0;
                             moveY = 0;
                         } else {
-                            // Phase 3 (2.4s ~ 3.2s, 0.8s Burst Fire): Freeze position while firing straight beam!
+                            // Phase 3 (1.8s ~ 2.6s, 0.8s Burst Fire): Freeze position while firing straight beam!
                             moveX = 0;
                             moveY = 0;
                         }
@@ -4471,7 +4471,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
                     ctx.shadowBlur = 0; // 100% NO GLOW!
                     ctx.shadowColor = 'transparent';
-                    ctx.strokeStyle = `rgba(255, 25, 55, ${progressRatio * 0.95})`;
+                    ctx.strokeStyle = `rgba(0, 229, 255, ${progressRatio * 0.95})`; // Pure Electric Cyan Blue!
                     ctx.lineWidth = 3;
                     ctx.setLineDash([10, 5]);
                     ctx.beginPath();
@@ -4521,13 +4521,13 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
             // Render Continuous Cannon Laser Beam if active for cannon_laser_head
             if (enemy.bodyType === 'cannon_laser_head' && enemy.isFiringCannonLaser) {
-                const elapsed = (3200 - enemy.cannonLaserTimer);
+                const elapsed = (2600 - enemy.cannonLaserTimer);
                 const fireAngle = enemy.cannonAimAngle || angleToPlayer;
                 ctx.save();
-                ctx.filter = 'none';
+                ctx.filter = 'none'; // Ensure 100% PURE un-distorted Pink Laser colors!
 
-                if (elapsed < 2400) {
-                    // Phase 1 & 2 (0 ~ 2.4s): Warning Target Alignment (1.2s) & Fixed Hold (1.2s)!
+                if (elapsed < 1800) {
+                    // Phase 1 & 2 (0 ~ 1.8s): Warning Target Alignment (1.2s) & 0.6s Fixed Hold!
                     const isHoldPhase = (elapsed >= 1200);
                     ctx.shadowBlur = 0;
                     ctx.shadowColor = 'transparent';
@@ -4541,8 +4541,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
-                    // Phase 3 (2.4s ~ 3.2s): Hot Pink Cannon Pulse Beam (Thin -> Super Thick 60px -> Fade Dissolve)!
-                    const beamProgress = (elapsed - 2400) / 800; // 0.0 -> 1.0
+                    // Phase 3 (1.8s ~ 2.6s): Hot Pink Cannon Pulse Beam (Thin -> Super Thick 60px -> Fade Dissolve)!
+                    const beamProgress = (elapsed - 1800) / 800; // 0.0 -> 1.0
                     
                     // Width expansion: 3px -> 60px -> 0px (Super Massive Cannon Blast!)
                     let beamWidth = 3;
@@ -4568,8 +4568,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.lineTo(beamEndX, beamEndY);
                     ctx.stroke();
 
-                    // Inner White Hot Core Line
-                    ctx.strokeStyle = `rgba(255, 240, 245, ${alpha * 0.95})`;
+                    // Inner Light Pink Core Line (Pure Pink Core!)
+                    ctx.strokeStyle = `rgba(255, 228, 225, ${alpha * 0.95})`;
                     ctx.lineWidth = Math.max(1, beamWidth * 0.45);
                     ctx.beginPath();
                     ctx.moveTo(eCenterX, eCenterY);

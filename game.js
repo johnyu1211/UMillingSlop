@@ -1686,12 +1686,17 @@ let isWallTimerPaused = false;
 function updateAndDrawWalls(ctx, deltaTime) {
     if (gameState !== 'gameStarted') return;
 
-    const dt = deltaTime || 16;
-    if (!isWallTimerPaused) {
+    // Pause all wall reorganization timers and falling/disappearing wall movement during Pause or Level-Up selection!
+    const isPausedMode = isPaused || levelUpState;
+    const dt = isPausedMode ? 0 : (deltaTime || 16);
+
+    if (!isWallTimerPaused && !isPausedMode) {
         wallReorganizeTimer -= dt;
     }
     if (wallReorganizeTimer <= 0 || wallEvents.length === 0) {
-        triggerWallReorganization();
+        if (!isPausedMode) {
+            triggerWallReorganization();
+        }
     }
 
     const tileSize = 64;
@@ -2089,8 +2094,10 @@ function stopAttacking() {
 
 // Function to draw level-up options
 function drawLevelUpOptions() {
-    const boxWidth = 480;
-    const boxHeight = 360;
+    const isAllMode = (currentLevelUpOptions.length > 3);
+    const boxWidth = isAllMode ? 520 : 480;
+    const maxVisible = isAllMode ? 6 : 3;
+    const boxHeight = isAllMode ? 580 : 360;
     const boxX = (canvas.width - boxWidth) / 2;
     const boxY = (canvas.height - boxHeight) / 2;
 
@@ -2103,23 +2110,24 @@ function drawLevelUpOptions() {
     ctx.fillStyle = '#FFD700';
     ctx.font = 'bold 20px "Segoe UI", Arial, sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText(`LEVEL UP! (LEVEL ${player.level})`, canvas.width / 2, boxY + 34);
+    const headerTitle = isAllMode ? `ALL UPGRADES CHEAT MENU (${currentLevelUpOptions.length} TOTAL)` : `LEVEL UP! (LEVEL ${player.level})`;
+    ctx.fillText(headerTitle, canvas.width / 2, boxY + 34);
 
     ctx.fillStyle = '#999999';
     ctx.font = '12px "Segoe UI", Arial, sans-serif';
     ctx.fillText('Press [W/S], [Arrow Keys], or [Mouse Wheel] to scroll, [Enter/Space] to confirm', canvas.width / 2, boxY + 54);
 
-    // Render 3 Cards
-    const startY = boxY + 76;
-    const itemHeight = 72;
-    const itemSpacing = 82;
+    // Render Cards
+    const startY = boxY + 74;
+    const itemHeight = isAllMode ? 68 : 72;
+    const itemSpacing = isAllMode ? 78 : 82;
 
     // Calculate scroll window range for all upgrades mode
     let startIdx = 0;
-    if (currentLevelUpOptions.length > 3) {
-        startIdx = Math.max(0, Math.min(selectedOptionIndex - 1, currentLevelUpOptions.length - 3));
+    if (currentLevelUpOptions.length > maxVisible) {
+        startIdx = Math.max(0, Math.min(selectedOptionIndex - 2, currentLevelUpOptions.length - maxVisible));
     }
-    const visibleOptions = currentLevelUpOptions.slice(startIdx, startIdx + 3);
+    const visibleOptions = currentLevelUpOptions.slice(startIdx, startIdx + maxVisible);
 
     visibleOptions.forEach((option, idx) => {
         const actualIndex = startIdx + idx;

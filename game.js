@@ -3681,8 +3681,8 @@ function getEnemyEnglishName(bodyType) {
         case 'floating_hands': return "Floating Hands Mutant";
         case 'double_torso': return "Double Torso Mutant";
         case 'split_mutant': return "Split Mutant";
-        case 'kamikaze_exploder': return "Grey Kamikaze";
-        case 'red_kamikaze_exploder': return "Red Kamikaze";
+        case 'kamikaze_exploder': return "Grey Exploder";
+        case 'red_kamikaze_exploder': return "Red Exploder";
         default: return "Basic Mutant";
     }
 }
@@ -3844,7 +3844,7 @@ function updateEnemies(deltaTime) {
             // Explode immediately when approaching within 80px!
             if (distToPlayer < 80) {
                 triggerExplosion(eCenterX, eCenterY);
-                applyPlayerDamage(isRed ? 28 : 24, isRed ? "Red Kamikaze (Exploded)" : "Grey Kamikaze (Exploded)");
+                applyPlayerDamage(isRed ? 28 : 24, isRed ? "Red Exploder (Exploded)" : "Grey Exploder (Exploded)");
                 enemy.hp = 0;
             }
         }

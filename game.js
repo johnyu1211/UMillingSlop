@@ -2347,7 +2347,7 @@ function spawnEnemy() {
     }
 
     // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
-    const basicBodyTypes = ['normal', 'normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye'];
+    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head'];
     let bodyType = basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
     // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
@@ -2475,6 +2475,13 @@ function spawnEnemy() {
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
         colorFilter = 'hue-rotate(180deg) saturate(280%) brightness(1.2)';
+    } else if (bodyType === 'cannon_laser_head') {
+        sizeMult *= 0.9;
+        hpMult *= 3.4;     // Heavy HP Tank Cannon!
+        speedMult *= 1.1;
+        shotCount = 0;
+        customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
+        colorFilter = 'hue-rotate(290deg) saturate(260%) brightness(1.25)'; // Hot Magenta / Pink Filter!
     }
 
     // 45% chance for Melee Charger/Berserker enemy (attackType: 'dash') for Tier 1 & 2
@@ -2497,6 +2504,9 @@ function spawnEnemy() {
     if (bodyType === 'laser_eye') {
         dedicatedCooldown = 3000; // 3.0s Cooldown for LaserEye!
         initialCooldown = 350;
+    } else if (bodyType === 'cannon_laser_head') {
+        dedicatedCooldown = 3800; // 3.8s Cooldown for Cannon Laser Head!
+        initialCooldown = 400;
     }
 
     const baseEnemyHp = 30 + (pLvl - 1) * 8;
@@ -4303,6 +4313,44 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
+                // Cannon Laser Head AI: Target alignment + 0.4s HOLD before firing straight Hot Pink pulse beam!
+                if (enemy.bodyType === 'cannon_laser_head') {
+                    if (enemy.timeUntilNextAttack <= 0) {
+                        enemy.isFiringCannonLaser = true;
+                        enemy.cannonLaserTimer = 2400; // 1.2s track + 0.4s hold + 0.8s burst beam!
+                        enemy.timeUntilNextAttack = enemy.attackCooldown || 3800;
+                    }
+
+                    if (enemy.isFiringCannonLaser) {
+                        enemy.cannonLaserTimer -= (deltaTime || 16);
+                        if (enemy.cannonLaserTimer <= 0) {
+                            enemy.isFiringCannonLaser = false;
+                        }
+
+                        const eCenterX = enemy.x + enemy.size / 2;
+                        const eCenterY = enemy.y + enemy.size / 2;
+                        const pCenterX = player.x + 45;
+                        const pCenterY = player.y + 45;
+                        const angleToPlayer = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
+
+                        const elapsed = 2400 - enemy.cannonLaserTimer;
+                        if (elapsed < 1200) {
+                            // Phase 1 (0 ~ 1.2s): Track aim angle towards player!
+                            enemy.cannonAimAngle = angleToPlayer;
+                            moveX = Math.cos(angleToPlayer) * curSpeed * 0.4;
+                            moveY = Math.sin(angleToPlayer) * curSpeed * 0.4;
+                        } else if (elapsed < 1600) {
+                            // Phase 2 (1.2s ~ 1.6s, EXACT 0.4s HOLD): Freeze position & aim angle completely!
+                            moveX = 0;
+                            moveY = 0;
+                        } else {
+                            // Phase 3 (1.6s ~ 2.4s, 0.8s Burst Fire): Freeze position while firing straight beam!
+                            moveX = 0;
+                            moveY = 0;
+                        }
+                    }
+                }
+
                 // Separation Steering Force: Push away nearby enemies to prevent central clustering
                 for (let j = 0; j < enemies.length; j++) {
                     if (index === j) continue;
@@ -4466,6 +4514,72 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
                     if (distToBeam < pRadius) {
                         applyPlayerDamage(4, "Laser Eye (Beam Sweep)");
+                    }
+                }
+                ctx.restore();
+            }
+
+            // Render Continuous Cannon Laser Beam if active for cannon_laser_head
+            if (enemy.bodyType === 'cannon_laser_head' && enemy.isFiringCannonLaser) {
+                const elapsed = (2400 - enemy.cannonLaserTimer);
+                const fireAngle = enemy.cannonAimAngle || angleToPlayer;
+                ctx.save();
+                ctx.filter = 'none';
+
+                if (elapsed < 1600) {
+                    // Phase 1 & 2 (0 ~ 1.6s): Warning Target Alignment & 0.4s Fixed Hold!
+                    const isHoldPhase = (elapsed >= 1200);
+                    ctx.shadowBlur = 0;
+                    ctx.shadowColor = 'transparent';
+                    ctx.strokeStyle = isHoldPhase ? 'rgba(255, 20, 147, 0.95)' : 'rgba(255, 105, 180, 0.7)';
+                    ctx.lineWidth = isHoldPhase ? 4 : 2;
+                    if (!isHoldPhase) ctx.setLineDash([8, 4]);
+
+                    ctx.beginPath();
+                    ctx.moveTo(eCenterX, eCenterY);
+                    ctx.lineTo(eCenterX + Math.cos(fireAngle) * 5000, eCenterY + Math.sin(fireAngle) * 5000);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                } else {
+                    // Phase 3 (1.6s ~ 2.4s): Hot Pink Cannon Pulse Beam (Thin -> Thick 34px -> Fade Dissolve)!
+                    const beamProgress = (elapsed - 1600) / 800; // 0.0 -> 1.0
+                    
+                    // Width expansion: 3px -> 34px -> 0px
+                    let beamWidth = 3;
+                    if (beamProgress < 0.25) {
+                        beamWidth = 3 + (34 - 3) * (beamProgress / 0.25); // Expand to 34px fast
+                    } else {
+                        beamWidth = 34 * (1 - (beamProgress - 0.25) / 0.75); // Shrink to 0px
+                    }
+
+                    const alpha = Math.max(0, 1.0 - beamProgress); // Smooth dissolve alpha
+                    const beamEndX = eCenterX + Math.cos(fireAngle) * 5000;
+                    const beamEndY = eCenterY + Math.sin(fireAngle) * 5000;
+
+                    // Hot Pink Outer Glow & Beam Body
+                    ctx.shadowColor = '#FF1493';
+                    ctx.shadowBlur = 20 * alpha;
+
+                    // Outer Hot Pink Glow Line
+                    ctx.strokeStyle = `rgba(255, 20, 147, ${alpha * 0.9})`;
+                    ctx.lineWidth = Math.max(1, beamWidth);
+                    ctx.beginPath();
+                    ctx.moveTo(eCenterX, eCenterY);
+                    ctx.lineTo(beamEndX, beamEndY);
+                    ctx.stroke();
+
+                    // Inner White Hot Core Line
+                    ctx.strokeStyle = `rgba(255, 240, 245, ${alpha * 0.95})`;
+                    ctx.lineWidth = Math.max(1, beamWidth * 0.4);
+                    ctx.beginPath();
+                    ctx.moveTo(eCenterX, eCenterY);
+                    ctx.lineTo(beamEndX, beamEndY);
+                    ctx.stroke();
+
+                    // Beam Hit Check on Player
+                    const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
+                    if (distToBeam < (beamWidth / 2 + 20)) {
+                        applyPlayerDamage(8, "Cannon Laser Head (Pink Beam Blast)");
                     }
                 }
                 ctx.restore();

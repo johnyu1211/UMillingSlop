@@ -4130,6 +4130,7 @@ function updateEnemies(deltaTime) {
                 const bColor = (enemy.tier === 4) ? '#FF1493' : (enemy.tier === 3) ? '#B026FF' : (enemy.tier === 2) ? '#00FF7F' : '#FF3333';
 
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
+                    enemy.lastAttackAnimTime = Date.now(); // Record attack animation start timestamp!
                     // Rapid 3-burst sequential machinegun fire!
                     for (let burstIndex = 0; burstIndex < 3; burstIndex++) {
                         setTimeout(() => {
@@ -4797,14 +4798,16 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 const animIndex = Math.floor(Date.now() / 110) % totalCols;
 
                 let row = 2; // Row 2 (y=1028): Move Animation
+                const isAttackingRecently = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < 1300);
+
                 if (enemy.bodyType === 'machinegun_humanoid') {
-                    // Row 3 (y=1542): Attack while Stopped (Stationary Attack)
-                    if (enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2200) - 700) {
+                    // Row 3 (y=1542): Attack while Stopped (Stationary Attack Form)
+                    if (isAttackingRecently || enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2200) - 800) {
                         row = 3;
                     }
                 } else if (enemy.bodyType === 'assault_humanoid') {
-                    // Row 4 (y=2056): Attack while Moving (Moving Assault Attack)
-                    if (enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2600) - 900) {
+                    // Row 4 (y=2056): Attack while Moving (Moving Assault Attack Form)
+                    if (isAttackingRecently || enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2600) - 1000) {
                         row = 4;
                     }
                 }

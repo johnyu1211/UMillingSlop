@@ -3925,7 +3925,55 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
             });
         }
 
-        // Disabled artificial tail glow strokes to match exact clean lobby bullet colors!
+        if (checkPlayerByDodge == 200) {
+            const tailColors = [tailColor1, tailColor2, tailColor3]; 
+            const tailLength = 35 + (player.currentWeapon ? player.currentWeapon.tailExtendLenght : 0); 
+            const partLength = tailLength / 3; 
+            const tailWidth = bulletTailThicc; 
+            
+            const angle = Math.atan2(bullet.velocityY, bullet.velocityX);
+            let tailStartX = bullet.x - Math.cos(angle) * (bullet.size / 2);
+            let tailStartY = bullet.y - Math.sin(angle) * (bullet.size / 2);
+            
+            ctx.lineWidth = tailWidth;
+
+            for (let i = 0; i < 3; i++) {
+                ctx.strokeStyle = tailColors[i];
+                const partStartX = tailStartX - Math.cos(angle) * partLength * i;
+                const partStartY = tailStartY - Math.sin(angle) * partLength * i;
+                const partEndX = partStartX - Math.cos(angle) * partLength;
+                const partEndY = partStartY - Math.sin(angle) * partLength;
+
+                ctx.beginPath();
+                ctx.moveTo(partStartX, partStartY);
+                ctx.lineTo(partEndX, partEndY);
+                ctx.stroke();
+            }
+        } else {
+            const tailColors = [tailColor1, tailColor2, tailColor3]; 
+            const tailLength = 35; 
+            const partLength = tailLength / 3; 
+            const tailWidth = bulletTailThicc; 
+            
+            const angle = Math.atan2(bullet.velocityY, bullet.velocityX);
+            let tailStartX = bullet.x - Math.cos(angle) * (bullet.size / 2);
+            let tailStartY = bullet.y - Math.sin(angle) * (bullet.size / 2);
+            
+            ctx.lineWidth = tailWidth;
+
+            for (let i = 0; i < 3; i++) {
+                ctx.strokeStyle = tailColors[i];
+                const partStartX = tailStartX - Math.cos(angle) * partLength * i;
+                const partStartY = tailStartY - Math.sin(angle) * partLength * i;
+                const partEndX = partStartX - Math.cos(angle) * partLength;
+                const partEndY = partStartY - Math.sin(angle) * partLength;
+
+                ctx.beginPath();
+                ctx.moveTo(partStartX, partStartY);
+                ctx.lineTo(partEndX, partEndY);
+                ctx.stroke();
+            }
+        }
 
         // Draw individual special bullets (e.g. GayShot)
         if (bullet.isGayShot) {

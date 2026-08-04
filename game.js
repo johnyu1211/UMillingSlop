@@ -4147,7 +4147,7 @@ function updateEnemies(deltaTime) {
                 const eCenterX = enemy.x + enemy.size / 2;
                 const eCenterY = enemy.y + enemy.size / 2;
                 const rushAngle = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
-                const rushSpeed = enemy.speed * 3.5; // 3.5x Fast Counter Rush Speed!
+                const rushSpeed = enemy.speed * 7.8; // 7.8x Ultra High-Speed Counter Rush!
                 enemy.dodgeRushVecX = Math.cos(rushAngle) * rushSpeed;
                 enemy.dodgeRushVecY = Math.sin(rushAngle) * rushSpeed;
                 enemy.dodgeRushAngle = rushAngle;

@@ -4133,9 +4133,15 @@ function updateEnemies(deltaTime) {
         // Keep full clear visibility without flickering fade-outs
         enemy.fadeAlpha = 1.0;
 
-        // Decrement attack cooldown
+        // Decrement attack cooldown & protective shield guard timer
         if (enemy.timeUntilNextAttack > 0) {
             enemy.timeUntilNextAttack -= (deltaTime || 16);
+        }
+        if (enemy.shieldTimer > 0) {
+            enemy.shieldTimer -= (deltaTime || 16);
+            if (enemy.shieldTimer <= 0) {
+                enemy.isShieldActive = false;
+            }
         }
 
         // Humanoid Dodge Reaction Counter-Rush Trigger: When player rolls/dodges, rush in a straight line ignoring walls!
@@ -4902,15 +4908,19 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 const totalCols = 6;
                 let row = 2; // Row 2 (y=1028): Move/Standard Animation
 
-                if (enemy.bodyType === 'machinegun_humanoid') {
-                    // Row 3 (y=1542): Attack ONLY during full active burst firing duration!
+                if (enemy.dodgeRushTimer > 0) {
+                    row = 0; // Row 1 (Index 0, y=0): High-Speed Dodge Counter Dash Motion!
+                } else if (enemy.isShieldActive && enemy.shieldTimer > 0) {
+                    row = 1; // Row 2 (Index 1, y=514): Protective Shield Guard Motion on Hit during Reload!
+                } else if (enemy.bodyType === 'machinegun_humanoid') {
+                    // Row 4 (Index 3, y=1542): Attack ONLY during full active burst firing duration!
                     const totalFiringDuration = (enemy.lastBurstCount || 23) * 65 + 250;
                     const isFiringNow = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < totalFiringDuration);
                     if (isFiringNow) {
                         row = 3;
                     }
                 } else if (enemy.bodyType === 'assault_humanoid') {
-                    // Row 4 (y=2056): Attack while Moving (Moving Assault Attack Form)
+                    // Row 5 (Index 4, y=2056): Attack while Moving
                     const isAssaultingRecently = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < 1300);
                     if (isAssaultingRecently || enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2600) - 1000) {
                         row = 4;
@@ -4942,6 +4952,21 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
             } else {
                 ctx.drawImage(cImg, eX, eY, eSize, eSize);
             }
+
+            // Protective Shield Guard Aura Circle Effect when hit during Reload Phase!
+            if (enemy.isShieldActive && enemy.shieldTimer > 0) {
+                const shieldAlpha = Math.max(0, Math.min(1.0, enemy.shieldTimer / 750));
+                ctx.save();
+                ctx.strokeStyle = `rgba(82, 203, 188, ${shieldAlpha * 0.9})`; // Cyan Mint Shield Guard Line
+                ctx.fillStyle = `rgba(82, 203, 188, ${shieldAlpha * 0.22})`;  // Semi-transparent Protective Barrier
+                ctx.lineWidth = 3.5;
+                ctx.beginPath();
+                ctx.arc(eX + eSize / 2, eY + eSize / 2, eSize * 0.72, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+                ctx.restore();
+            }
+
             return;
         }
     }
@@ -5263,7 +5288,17 @@ function handleCollisions() {
 
                 enemy.justHit = true;
                 enemy.killedByPlayer = true;
-                const hitDmg = (player.attackDamage + Math.floor(Math.random() * (player.currentWeapon.additionalDamage || 5))) * count;
+                let hitDmg = (player.attackDamage + Math.floor(Math.random() * (player.currentWeapon.additionalDamage || 5))) * count;
+
+                // Humanoid Shield Block: Activate Row 2 Shield Guard when hit during Reload Phase!
+                if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
+                    if (enemy.timeUntilNextAttack > 0) {
+                        enemy.isShieldActive = true;
+                        enemy.shieldTimer = 750; // 750ms Protective Guard Posture!
+                        hitDmg *= 0.15; // 85% Damage Reduction Block!
+                    }
+                }
+
                 enemy.takenDamage = hitDmg;
                 enemy.hp -= hitDmg;
                 enemy.hitTime = performance.now();

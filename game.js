@@ -3909,8 +3909,12 @@ function updateEntities(array) {
 }
 
 function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tailColor2, tailColor3, checkPlayerByDodge) {
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+
     array.forEach(bullet => {
-        ctx.shadowBlur = 0; // Completely remove heavy canvas shadow blur from bullets!
+        ctx.shadowColor = 'transparent';
+        ctx.shadowBlur = 0; // Force clear canvas shadow glow!
 
         // Spawn fiery magma flame sparks behind burn bullets
         if (bullet.isBurnBullet && Math.random() < 0.7) {
@@ -3988,6 +3992,7 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
     });
 
     // Single-Pass Batch Draw Call for standard bullets (100% Pure Clean Render, 0 Glow)
+    ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
     ctx.fillStyle = color;
     ctx.beginPath();

@@ -1033,20 +1033,18 @@ const allLevelUpOptions = [
     },
     { 
         title: '💥 Twin Trigger I', 
-        desc: 'All Weapons: Fires +1 extra bullet simultaneously on every shot!', 
+        desc: 'All Weapons: Fires a fast 2nd follow-up bullet 0.1s after every shot! (Consumes 0 extra ammo)', 
         condition: () => ((player.twinTriggerLevel || 0) === 0),
         effect: () => { 
             player.twinTriggerLevel = 1;
-            player.bonusBulletCount = (player.bonusBulletCount || 0) + 1;
         } 
     },
     { 
         title: '💥 Twin Trigger II', 
-        desc: 'All Weapons: Fires +1 additional extra bullet on every shot! (Total +2 extra bullets)', 
+        desc: 'All Weapons: Fires 2nd & 3rd follow-up bullets 0.1s & 0.2s after every shot! (Consumes 0 extra ammo)', 
         condition: () => ((player.twinTriggerLevel || 0) === 1),
         effect: () => { 
             player.twinTriggerLevel = 2;
-            player.bonusBulletCount = (player.bonusBulletCount || 0) + 1;
         } 
     },
     { 
@@ -2628,8 +2626,7 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false, isTw
         const flameGlowColor = (isRedBuff && redLvl >= 1) ? '#FF8800' : null;
         const isBurnBullet = isRedBuff && redLvl >= 1;
 
-        // Twin Trigger I & II: Add bonus extra bullets per shot!
-        let shotCount = (player.currentWeapon.ammoShotNum || 1) + (player.bonusBulletCount || 0);
+        let shotCount = player.currentWeapon.ammoShotNum || 1;
         const isShotgun = (player.currentWeapon && (player.currentWeapon.name === "winchester shotgun ww2 version" || player.currentWeapon.ammoShotNum > 1));
         const isVector = (player.currentWeapon && (player.currentWeapon.name === "vector smg 9mm" || player.currentWeapon.name.includes("vector")));
 
@@ -2765,25 +2762,25 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false, isTw
             }, 600); // 0.6s delay!
         }
 
-        // Universal Twin Trigger I & II: Fast 0.15s / 0.30s automated bursts for ALL weapons!
+        // Universal Twin Trigger I & II: Fast 0.10s / 0.20s automated follow-up bursts for ALL weapons!
         const twinLvl = player.twinTriggerLevel || 0;
         if (twinLvl >= 1 && !isTwinBurst) {
-            // 2nd Burst after 150ms
+            // 2nd Burst after 100ms
             setTimeout(() => {
                 if (gameState === 'gameStarted' && !isPaused && !levelUpState && player.hp > 0) {
                     const curMouseWorld = getMousePosInWorld(canvas, mouse);
                     createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, isSecondBurst, true);
                 }
-            }, 150);
+            }, 100);
 
-            // 3rd Burst after 300ms (Level 2)
+            // 3rd Burst after 200ms (Level 2)
             if (twinLvl >= 2) {
                 setTimeout(() => {
                     if (gameState === 'gameStarted' && !isPaused && !levelUpState && player.hp > 0) {
                         const curMouseWorld = getMousePosInWorld(canvas, mouse);
                         createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, isSecondBurst, true);
                     }
-                }, 300);
+                }, 200);
             }
         }
     }

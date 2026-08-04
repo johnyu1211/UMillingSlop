@@ -1,5 +1,7 @@
 # UMillingSlop 🎮
 
+> **🎮 Play Live Game**: [https://johnyu1211.github.io/UMillingSlop/](https://johnyu1211.github.io/UMillingSlop/)
+
 Top-down action survival shooter game featuring dynamic procedural falling walls, diverse mutant enemy types, responsive combat mechanics, and persistent high score tracking.
 
 ## 🌟 Key Features
@@ -15,7 +17,7 @@ Top-down action survival shooter game featuring dynamic procedural falling walls
 
 ## 🚀 How to Play
 
-1. Open `index.html` in any modern web browser.
+1. **[Click Here to Play Live Game](https://johnyu1211.github.io/UMillingSlop/)** or open `index.html` in any web browser.
 2. Use **WASD** to move, **Mouse** to aim and shoot.
 3. Evade falling walls and lethal laser sweeps while surviving mutant waves!
 

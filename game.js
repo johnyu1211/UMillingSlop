@@ -2844,13 +2844,32 @@ function drawParticles(ctx) {
     ctx.shadowBlur = 4;
     for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        const baseAlpha = (p.maxAlpha !== undefined) ? p.maxAlpha : 0.6;
-        const alpha = Math.max(0, Math.min(baseAlpha, (p.lifeSpan / 8) * baseAlpha));
-        ctx.globalAlpha = alpha;
-        ctx.fillStyle = p.color;
-        ctx.shadowColor = p.color;
+        if (p.isRedFadingRectTrail) {
+            // Linear Fading Red Rectangular Afterimage (Front bright red, tail fading to transparent!)
+            const maxLife = p.maxLifeSpan || 20;
+            const progressAlpha = Math.max(0, Math.min(1.0, p.lifeSpan / maxLife));
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate(p.angle || 0);
 
-        ctx.fillRect(p.x, p.y, p.size, p.size);
+            const w = p.width || 45;
+            const h = p.height || 30;
+
+            const grad = ctx.createLinearGradient(-w / 2, 0, w / 2, 0);
+            grad.addColorStop(0, `rgba(255, 17, 51, 0)`);                   // Tail side: Transparent
+            grad.addColorStop(1.0, `rgba(255, 17, 51, ${progressAlpha * 0.9})`); // Front side (near enemy): Hot Crimson Red!
+
+            ctx.fillStyle = grad;
+            ctx.fillRect(-w / 2, -h / 2, w, h);
+            ctx.restore();
+        } else {
+            const baseAlpha = (p.maxAlpha !== undefined) ? p.maxAlpha : 0.6;
+            const alpha = Math.max(0, Math.min(baseAlpha, (p.lifeSpan / 8) * baseAlpha));
+            ctx.globalAlpha = alpha;
+            ctx.fillStyle = p.color;
+            ctx.shadowColor = p.color;
+            ctx.fillRect(p.x, p.y, p.size, p.size);
+        }
     }
     ctx.restore();
 }
@@ -4118,6 +4137,25 @@ function updateEnemies(deltaTime) {
             enemy.timeUntilNextAttack -= (deltaTime || 16);
         }
 
+        // Humanoid Dodge Reaction Counter-Rush Trigger: When player rolls/dodges, rush in a straight line ignoring walls!
+        if (player.isDodging) {
+            if (!enemy.hasDodgeReacted && (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid')) {
+                enemy.hasDodgeReacted = true;
+                enemy.dodgeRushTimer = 650; // 650ms Ultra High-Speed Ghost Counter-Rush!
+                const pCenterX = player.x + 45;
+                const pCenterY = player.y + 45;
+                const eCenterX = enemy.x + enemy.size / 2;
+                const eCenterY = enemy.y + enemy.size / 2;
+                const rushAngle = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
+                const rushSpeed = enemy.speed * 4.0; // 4.0x Ultra Ghost Sprint!
+                enemy.dodgeRushVecX = Math.cos(rushAngle) * rushSpeed;
+                enemy.dodgeRushVecY = Math.sin(rushAngle) * rushSpeed;
+                enemy.dodgeRushAngle = rushAngle;
+            }
+        } else {
+            enemy.hasDodgeReacted = false; // Reset trigger state when player finishes dodging
+        }
+
         // Check if the enemy is ready to attack or initiate Melee Dash
         if (enemy.attackType === 'dash') {
             const distToPlayer = Math.hypot(player.x - (enemy.x + enemy.size / 2), player.y - (enemy.y + enemy.size / 2));
@@ -4529,8 +4567,30 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
-                // Check ghost passability: Kamikaze exploders & split mutants can pass walls freely!
-                const isGhostPassable = (enemy.type === 'split_mutant' || enemy.bodyType === 'split_mutant' || enemy.bodyType === 'kamikaze_exploder' || enemy.bodyType === 'red_kamikaze_exploder');
+                // Humanoid Dodge Reaction Counter-Rush Movement Override: High Speed Straight Rush Ignoring Walls!
+                if (enemy.dodgeRushTimer > 0) {
+                    enemy.dodgeRushTimer -= (deltaTime || 16);
+                    moveX = enemy.dodgeRushVecX || 0;
+                    moveY = enemy.dodgeRushVecY || 0;
+
+                    // Spawn Linear Fading Red Rectangular Trail Particles along straight dash line!
+                    if (Math.random() < 0.85) {
+                        particles.push({
+                            x: enemy.x + enemy.size / 2,
+                            y: enemy.y + enemy.size / 2,
+                            width: enemy.size * 0.9,
+                            height: enemy.size * 0.65,
+                            angle: enemy.dodgeRushAngle || 0,
+                            lifeSpan: 20,
+                            maxLifeSpan: 20,
+                            isRedFadingRectTrail: true,
+                            color: '#FF1133'
+                        });
+                    }
+                }
+
+                // Check ghost passability: Kamikaze exploders, split mutants, & dodge rushing humanoids can pass walls freely!
+                const isGhostPassable = (enemy.type === 'split_mutant' || enemy.bodyType === 'split_mutant' || enemy.bodyType === 'kamikaze_exploder' || enemy.bodyType === 'red_kamikaze_exploder' || (enemy.dodgeRushTimer > 0));
                 if (!isGhostPassable) {
                     const nextEx = enemy.x + moveX;
                     const nextEy = enemy.y + moveY;

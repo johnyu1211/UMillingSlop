@@ -58,45 +58,46 @@ function getPooledBullet() {
 }
 
 function updateAndDrawYellowBulletTrails(ctx) {
-    if (yellowBulletTrails.length === 0) return;
+    if (!player.gayShotSelected || !player.shotRoll2Selected) return;
 
+    // Connect active bullet trajectory to render ONE SINGLE GIANT CONTINUOUS BEAM TRAIL!
     ctx.save();
-    for (let i = yellowBulletTrails.length - 1; i >= 0; i--) {
-        const trail = yellowBulletTrails[i];
-        trail.life -= 0.02; // Long persistence trail!
-        if (trail.life <= 0) {
-            yellowBulletTrails.splice(i, 1);
-            continue;
-        }
+    ctx.strokeStyle = '#FFD700';
+    ctx.shadowColor = '#FFA500';
+    ctx.shadowBlur = 14;
+    ctx.lineWidth = 14;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.globalAlpha = 0.75;
 
-        ctx.globalAlpha = trail.life * 0.85;
-        ctx.fillStyle = '#FFD700';
-        ctx.shadowColor = '#FFA500';
-        ctx.shadowBlur = 12;
+    for (let i = 0; i < playerBullets.length; i++) {
+        const bullet = playerBullets[i];
+        if (bullet.isGayShot && bullet.originX !== undefined) {
+            ctx.beginPath();
+            ctx.moveTo(bullet.originX, bullet.originY);
+            ctx.lineTo(bullet.x, bullet.y);
+            ctx.stroke();
 
-        ctx.beginPath();
-        ctx.arc(trail.x, trail.y, 9, 0, Math.PI * 2);
-        ctx.fill();
-
-        // 1. Slow Enemy Effect (50% slow down when touching yellow trail!)
-        for (let eIdx = 0; eIdx < enemies.length; eIdx++) {
-            const enemy = enemies[eIdx];
-            if (!enemy) continue;
-            const dist = Math.hypot(enemy.x + enemy.size / 2 - trail.x, enemy.y + enemy.size / 2 - trail.y);
-            if (dist < (enemy.size / 2 + 16)) {
-                if (!enemy.baseSpeed) enemy.baseSpeed = enemy.speed;
-                enemy.yellowSlowTimer = 1500; // 1.5s slow!
+            // 1. Slow Enemy Effect along the giant beam path
+            for (let eIdx = 0; eIdx < enemies.length; eIdx++) {
+                const enemy = enemies[eIdx];
+                if (!enemy) continue;
+                const dist = Math.hypot(enemy.x + enemy.size / 2 - bullet.x, enemy.y + enemy.size / 2 - bullet.y);
+                if (dist < (enemy.size / 2 + 24)) {
+                    if (!enemy.baseSpeed) enemy.baseSpeed = enemy.speed;
+                    enemy.yellowSlowTimer = 1500; // 1.5s slow down!
+                }
             }
-        }
 
-        // 2. Destroy Wall Effect (Instantly break walls when touching yellow trail!)
-        for (let wIdx = wallEvents.length - 1; wIdx >= 0; wIdx--) {
-            const w = wallEvents[wIdx];
-            if (w.state === 'landed') {
-                if (trail.x > w.x - 10 && trail.x < w.x + 74 &&
-                    trail.y > w.y - 10 && trail.y < w.y + 74) {
-                    createParticles(w.x + 32, w.y + 32, 0);
-                    wallEvents.splice(wIdx, 1); // Instantly destroy wall!
+            // 2. Destroy Wall Effect along the giant beam path
+            for (let wIdx = wallEvents.length - 1; wIdx >= 0; wIdx--) {
+                const w = wallEvents[wIdx];
+                if (w.state === 'landed') {
+                    if (bullet.x > w.x - 12 && bullet.x < w.x + 76 &&
+                        bullet.y > w.y - 12 && bullet.y < w.y + 76) {
+                        createParticles(w.x + 32, w.y + 32, 0);
+                        wallEvents.splice(wIdx, 1); // Instantly destroy wall!
+                    }
                 }
             }
         }
@@ -3943,15 +3944,6 @@ function updateEntities(array) {
         } else {
             entity.x += entity.velocityX;
             entity.y += entity.velocityY;
-        }
-
-        // Synergy: Spawn Long Yellow Bullet Trails when both GayShot & Shot Roll II are owned!
-        if (player.gayShotSelected && player.shotRoll2Selected && entity.isGayShot) {
-            yellowBulletTrails.push({
-                x: entity.x,
-                y: entity.y,
-                life: 1.0
-            });
         }
 
         // Viewport Culling & Out-of-bounds Removal

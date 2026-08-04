@@ -4031,20 +4031,19 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
         }
     });
 
-    // Single-Pass Batch Draw Call for standard bullets (100% Pure Clean Render, 0 Glow)
+    // Single-Pass Draw Call respecting individual bullet.color (e.g. #52CBBC for Machinegun)
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
-    ctx.fillStyle = color;
-    ctx.beginPath();
     for (let i = 0; i < array.length; i++) {
         const bullet = array[i];
         if (!bullet.isRainbowShot) {
             const r = (bullet.size || 7) / 2;
-            ctx.moveTo(bullet.x + r, bullet.y);
+            ctx.fillStyle = bullet.color || color;
+            ctx.beginPath();
             ctx.arc(bullet.x, bullet.y, r, 0, Math.PI * 2);
+            ctx.fill();
         }
     }
-    ctx.fill();
     ctx.shadowBlur = 0;
 
     // Render Hitbox Debug Outlines inside world camera transform context

@@ -2347,7 +2347,7 @@ function spawnEnemy() {
     }
 
     // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
-    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye'];
+    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid', 'assault_humanoid'];
     let bodyType = basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
     // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
@@ -2489,6 +2489,20 @@ function spawnEnemy() {
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
         colorFilter = 'hue-rotate(100deg) saturate(280%) brightness(1.2)'; // Electric Lime Green Filter!
+    } else if (bodyType === 'machinegun_humanoid') {
+        sizeMult *= 1.2;
+        hpMult *= 2.2;
+        speedMult *= 1.0;
+        shotCount = 3;     // Rapid 3-burst shooter
+        customSprite = 'OLD/RoBChar.png';
+        colorFilter = 'none';
+    } else if (bodyType === 'assault_humanoid') {
+        sizeMult *= 1.25;
+        hpMult *= 2.5;
+        speedMult *= 1.35; // Fast Charger
+        shotCount = 3;     // Rush 3-burst shooter
+        customSprite = 'OLD/RoBChar.png';
+        colorFilter = 'hue-rotate(330deg) saturate(320%) brightness(1.2)'; // Deep Red Filter per request!
     }
 
     // 45% chance for Melee Charger/Berserker enemy (attackType: 'dash') for Tier 1 & 2
@@ -2516,6 +2530,12 @@ function spawnEnemy() {
         initialCooldown = 400;
     } else if (bodyType === 'green_laser_eye') {
         dedicatedCooldown = 5500; // 5.5s Long Cooldown for Green Laser Eye!
+        initialCooldown = 300;
+    } else if (bodyType === 'machinegun_humanoid') {
+        dedicatedCooldown = 2200;
+        initialCooldown = 400;
+    } else if (bodyType === 'assault_humanoid') {
+        dedicatedCooldown = 2600;
         initialCooldown = 300;
     }
 
@@ -4084,7 +4104,25 @@ function updateEnemies(deltaTime) {
                 // Match Bullet Color to Monster Tier Color! (Tier 1: Red, Tier 2: Green, Tier 3: Purple, Tier 4: Pink)
                 const bColor = (enemy.tier === 4) ? '#FF1493' : (enemy.tier === 3) ? '#B026FF' : (enemy.tier === 2) ? '#00FF7F' : '#FF3333';
 
-                if (count === 1) {
+                if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
+                    // Rapid 3-burst sequential machinegun fire!
+                    for (let burstIndex = 0; burstIndex < 3; burstIndex++) {
+                        setTimeout(() => {
+                            if (enemy && enemy.hp > 0) {
+                                const curAngle = Math.atan2(player.y - (enemy.y + enemy.size / 2), player.x - (enemy.x + enemy.size / 2));
+                                enemyBullets.push({
+                                    x: enemy.x + enemy.size / 2,
+                                    y: enemy.y + enemy.size / 2,
+                                    velocityX: Math.cos(curAngle) * 6.5,
+                                    velocityY: Math.sin(curAngle) * 6.5,
+                                    size: 7,
+                                    color: (enemy.bodyType === 'assault_humanoid') ? '#FF1133' : bColor,
+                                    tier: enemy.tier || 1
+                                });
+                            }
+                        }, burstIndex * 130);
+                    }
+                } else if (count === 1) {
                     enemyBullets.push({
                         x: enemy.x + enemy.size / 2,
                         y: enemy.y + enemy.size / 2,
@@ -4723,7 +4761,31 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
     if (enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
-            if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye' || enemy.bodyType === 'green_laser_eye') {
+            if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
+                // RoBChar.png (514x514 per frame, 6 cols, 5 rows)
+                const frameW = 514;
+                const frameH = 514;
+                const totalCols = 6;
+                const animIndex = Math.floor(Date.now() / 110) % totalCols;
+
+                let row = 2; // Row 2 (y=1028): Move Animation
+                if (enemy.bodyType === 'machinegun_humanoid') {
+                    // Row 3 (y=1542): Attack while Stopped (Stationary Attack)
+                    if (enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2200) - 700) {
+                        row = 3;
+                    }
+                } else if (enemy.bodyType === 'assault_humanoid') {
+                    // Row 4 (y=2056): Attack while Moving (Moving Assault Attack)
+                    if (enemy.timeUntilNextAttack > (enemy.dedicatedCooldown || 2600) - 900) {
+                        row = 4;
+                    }
+                }
+
+                const srcX = animIndex * frameW;
+                const srcY = row * frameH;
+
+                ctx.drawImage(cImg, srcX, srcY, frameW, frameH, eX, eY, eSize, eSize);
+            } else if (enemy.bodyType === 'cannon_laser_head' || enemy.bodyType === 'laser_eye' || enemy.bodyType === 'green_laser_eye') {
                 const pCenterX = player.x + 45;
                 const pCenterY = player.y + 45;
                 const angleToP = Math.atan2(pCenterY - (eY + eSize / 2), pCenterX - (eX + eSize / 2));

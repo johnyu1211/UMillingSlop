@@ -981,6 +981,14 @@ const allLevelUpOptions = [
         } 
     },
     { 
+        title: '💥 Double Tap', 
+        desc: 'Shotgun fires an automatic 2nd burst 0.6s after shooting! (Consumes 0 extra ammo)', 
+        condition: () => (!player.doubleTapSelected),
+        effect: () => { 
+            player.doubleTapSelected = true;
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2523,9 +2531,9 @@ function spawnEnemy() {
 
 
 
-function createBullet(array, x, y, targetX, targetY) {
+function createBullet(array, x, y, targetX, targetY, isSecondBurst = false) {
     if (array === playerBullets) {
-        if (player.isReloading || (player.ammo <= 0 && blueBuffTimer <= 0)) return;
+        if (!isSecondBurst && (player.isReloading || (player.ammo <= 0 && blueBuffTimer <= 0))) return;
 
         const baseWeaponDamage = (player.currentWeapon && player.currentWeapon.additionalDamage) ? player.currentWeapon.additionalDamage : 5;
         const recoilIntensity = Math.min(8, Math.max(1, baseWeaponDamage - 3));
@@ -2676,8 +2684,18 @@ function createBullet(array, x, y, targetX, targetY) {
             }
         }
 
-        if (blueBuffTimer <= 0) {
+        if (!isSecondBurst && blueBuffTimer <= 0) {
             player.ammo -= 1;
+        }
+
+        // Double Tap Synergy: Automatic 2nd burst 0.6s after primary shotgun firing!
+        if (isShotgun && player.doubleTapSelected && !isSecondBurst) {
+            setTimeout(() => {
+                if (gameState === 'gameStarted' && !isPaused && !levelUpState && player.hp > 0) {
+                    const curMouseWorld = getMousePosInWorld(canvas, mouse);
+                    createBullet(array, player.x + player.size / 2, player.y + player.size / 2, curMouseWorld.x, curMouseWorld.y, true);
+                }
+            }, 600); // 0.6s delay!
         }
     }
 }

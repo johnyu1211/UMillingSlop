@@ -4145,8 +4145,8 @@ function updateEnemies(deltaTime) {
 
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
                     enemy.lastAttackAnimTime = Date.now(); // Record attack animation start timestamp!
-                    // Rapid 3-burst sequential machinegun fire!
-                    for (let burstIndex = 0; burstIndex < 3; burstIndex++) {
+                    const burstCount = Math.floor(Math.random() * 4) + 5; // Rapid 5 to 8 burst shots!
+                    for (let burstIndex = 0; burstIndex < burstCount; burstIndex++) {
                         setTimeout(() => {
                             if (enemy && enemy.hp > 0) {
                                 const curAngle = Math.atan2(player.y - (enemy.y + enemy.size / 2), player.x - (enemy.x + enemy.size / 2));
@@ -4161,7 +4161,7 @@ function updateEnemies(deltaTime) {
                                     tier: enemy.tier || 1
                                 });
                             }
-                        }, burstIndex * 130);
+                        }, burstIndex * 105);
                     }
                 } else if (count === 1) {
                     enemyBullets.push({

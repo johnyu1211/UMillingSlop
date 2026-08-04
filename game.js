@@ -4366,11 +4366,11 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
-                // Green Laser Eye AI: 1.2s warning + 4.5s Long Duration Continuous Low Damage Beam!
+                // Green Laser Eye AI: 1.0s warning + 4.5s Long Duration Continuous Low Damage Beam!
                 if (enemy.bodyType === 'green_laser_eye') {
                     if (enemy.timeUntilNextAttack <= 0) {
                         enemy.isFiringGreenLaser = true;
-                        enemy.greenLaserTimer = 5700; // 1.2s warning + 4.5s long continuous beam!
+                        enemy.greenLaserTimer = 5500; // 1.0s warning + 4.5s long continuous beam!
                         enemy.timeUntilNextAttack = enemy.attackCooldown || 5500;
                     }
 
@@ -4387,7 +4387,7 @@ function updateEnemies(deltaTime) {
                         const distToPlayer = Math.hypot(pCenterX - eCenterX, pCenterY - eCenterY);
                         const rushAngle = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
 
-                        const isWarningPhase = enemy.greenLaserTimer > 4500; // First 1.2s warning phase
+                        const isWarningPhase = enemy.greenLaserTimer > 4500; // First 1.0s warning phase
 
                         if (isWarningPhase) {
                             if (distToPlayer > 200) {
@@ -4641,14 +4641,14 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
             // Render Long Duration Continuous Green Laser Beam for green_laser_eye (4.5s long continuous fire, low tick damage)
             if (enemy.bodyType === 'green_laser_eye' && enemy.isFiringGreenLaser) {
-                const laserProgress = (5700 - enemy.greenLaserTimer);
+                const laserProgress = (5500 - enemy.greenLaserTimer);
                 ctx.save();
                 ctx.filter = 'none'; // Ensure 100% PURE Lime Green colors!
 
-                if (laserProgress < 1200) {
-                    // Warning phase (1.2s): Track aim angle
+                if (laserProgress < 1000) {
+                    // Warning phase (1.0s): Track aim angle
                     enemy.currentBeamAngle = angleToPlayer;
-                    const progressRatio = Math.min(1, laserProgress / 1200);
+                    const progressRatio = Math.min(1, laserProgress / 1000);
 
                     ctx.shadowBlur = 0;
                     ctx.shadowColor = 'transparent';
@@ -4661,12 +4661,12 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
-                    // Long Firing Phase (4.5s): Continuous Lime Green Beam (#00FF66) with soft tracking!
+                    // Long Firing Phase (4.5s): Continuous Lime Green Beam (#00FF66) with fast tracking (0.048)!
                     if (!isPaused && !levelUpState) {
                         let diff = angleToPlayer - enemy.currentBeamAngle;
                         while (diff < -Math.PI) diff += Math.PI * 2;
                         while (diff > Math.PI) diff -= Math.PI * 2;
-                        enemy.currentBeamAngle += diff * 0.022; // Smooth 0.022 tracking speed!
+                        enemy.currentBeamAngle += diff * 0.048; // Fast 0.048 tracking speed (Faster than Blue 0.030)!
                     }
 
                     const fireAngle = enemy.currentBeamAngle;

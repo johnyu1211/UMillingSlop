@@ -4505,6 +4505,18 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
     const eY = enemy.y;
     const eSize = enemy.size;
 
+    // Horizontal Flip Guard: Facing Left if player is to the left of the monster center!
+    const pCenterX = player.x + 45;
+    const eCenterX = eX + eSize / 2;
+    const facingLeft = pCenterX < eCenterX;
+
+    ctx.save();
+    if (facingLeft && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'green_laser_eye') {
+        ctx.translate(eCenterX, eY + eSize / 2);
+        ctx.scale(-1, 1);
+        ctx.translate(-eCenterX, -(eY + eSize / 2));
+    }
+
     if (enemy.bodyType === 'red_kamikaze_exploder' && enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
@@ -4948,6 +4960,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
         // Standard Enemy Sprite (1:1 Ratio)
         ctx.drawImage(basicenEmySprite, sourceX, sy, spriteWidth, spriteHeight, eX, eY, eSize, eSize);
     }
+    ctx.restore(); // Restore horizontal flip facing state!
 }
 
 function drawEnemies() {

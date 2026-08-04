@@ -4815,33 +4815,55 @@ function handleCollisions() {
         }
     }
 
-    // 3. Fast Player Bullets vs Enemies collision with early break
+    // 3. Fast Cluster-Merged Player Bullets vs Enemies Collision
+    // Merges bullets closer than 18px into a single big bounding box collider for fast calculation while keeping individual visual drawing!
     for (let bIndex = playerBullets.length - 1; bIndex >= 0; bIndex--) {
         const bullet = playerBullets[bIndex];
         if (!bullet) continue;
         const bSize = bullet.size || 7;
-        const bLeft = bullet.x - bSize;
-        const bRight = bullet.x + bSize;
-        const bTop = bullet.y - bSize;
-        const bBottom = bullet.y + bSize;
 
+        // Group sibling bullets closer than 18px into single merged cluster box
+        const clusterIndices = [bIndex];
+        let minX = bullet.x - bSize, maxX = bullet.x + bSize;
+        let minY = bullet.y - bSize, maxY = bullet.y + bSize;
+
+        for (let nextIdx = bIndex - 1; nextIdx >= 0; nextIdx--) {
+            const sibling = playerBullets[nextIdx];
+            if (!sibling) continue;
+            const dist = Math.hypot(bullet.x - sibling.x, bullet.y - sibling.y);
+            if (dist < 18) {
+                clusterIndices.push(nextIdx);
+                const sSz = sibling.size || 7;
+                minX = Math.min(minX, sibling.x - sSz);
+                maxX = Math.max(maxX, sibling.x + sSz);
+                minY = Math.min(minY, sibling.y - sSz);
+                maxY = Math.max(maxY, sibling.y + sSz);
+            }
+        }
+
+        // Test Single Merged Cluster Box against enemies
         for (let eIndex = enemies.length - 1; eIndex >= 0; eIndex--) {
             const enemy = enemies[eIndex];
             if (!enemy) continue;
 
-            if (bRight > enemy.x && bLeft < enemy.x + enemy.size &&
-                bBottom > enemy.y && bTop < enemy.y + enemy.size) {
-                
-                playerBullets.splice(bIndex, 1);
+            if (maxX > enemy.x && minX < enemy.x + enemy.size &&
+                maxY > enemy.y && minY < enemy.y + enemy.size) {
+
+                // Apply hits for all bullets in this cluster!
+                const count = clusterIndices.length;
+                clusterIndices.sort((a, b) => b - a).forEach(idx => {
+                    if (playerBullets[idx]) {
+                        playerBullets.splice(idx, 1);
+                    }
+                });
+
                 enemy.justHit = true;
                 enemy.killedByPlayer = true;
-                enemy.takenDamage = player.attackDamage + Math.floor(Math.random() * (player.currentWeapon.additionalDamage || 5));
-                enemy.hp -= enemy.takenDamage;
-                if (bullet.isBurnBullet) {
-                    enemy.burnDoTTimer = 3500;
-                }
+                const hitDmg = (player.attackDamage + Math.floor(Math.random() * (player.currentWeapon.additionalDamage || 5))) * count;
+                enemy.takenDamage = hitDmg;
+                enemy.hp -= hitDmg;
                 enemy.hitTime = performance.now();
-                break; // Break inner enemy loop immediately upon bullet hit!
+                break;
             }
         }
     }

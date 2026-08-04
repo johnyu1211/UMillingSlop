@@ -925,6 +925,14 @@ const allLevelUpOptions = [
         } 
     },
     { 
+        title: '💥 GayShot', 
+        desc: 'Rainbow Chromatic Pellets oscillating in rotating DNA double-helix spiral wave patterns!', 
+        condition: () => (player.straightShotSelected && !player.gayShotSelected),
+        effect: () => { 
+            player.gayShotSelected = true;
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2585,12 +2593,20 @@ function createBullet(array, x, y, targetX, targetY) {
                 array.push({ 
                     x: pX,
                     y: pY,
+                    originX: pX,
+                    originY: pY,
                     velocityX: Math.cos(shootAngle) * speed,
                     velocityY: Math.sin(shootAngle) * speed,
+                    shootAngle: shootAngle,
+                    perpAngle: perpAngle,
                     size: bSize,
                     color: finalColor,
                     glowColor: flameGlowColor,
-                    isBurnBullet: isBurnBullet
+                    isBurnBullet: isBurnBullet,
+                    isGayShot: player.gayShotSelected,
+                    dnaIndex: i,
+                    dnaPhase: (i % 2 === 0 ? 0 : Math.PI), // Opposite DNA phase for double-helix!
+                    traveledDist: 0
                 });
             }
         } else {
@@ -3752,8 +3768,18 @@ function updateEntities(array) {
 
     for (let index = array.length - 1; index >= 0; index--) {
         const entity = array[index];
-        entity.x += entity.velocityX;
-        entity.y += entity.velocityY;
+        
+        if (entity.isGayShot && entity.originX !== undefined) {
+            entity.traveledDist = (entity.traveledDist || 0) + Math.hypot(entity.velocityX, entity.velocityY);
+            const wave = Math.sin(entity.traveledDist * 0.075 + entity.dnaPhase) * 15; // Rotating DNA Double-Helix Spiral Wave!
+
+            // Advance along velocity angle + oscillate perpendicularly along perpAngle!
+            entity.x = entity.originX + Math.cos(entity.shootAngle) * entity.traveledDist + Math.cos(entity.perpAngle) * wave;
+            entity.y = entity.originY + Math.sin(entity.shootAngle) * entity.traveledDist + Math.sin(entity.perpAngle) * wave;
+        } else {
+            entity.x += entity.velocityX;
+            entity.y += entity.velocityY;
+        }
 
         // Viewport Culling & Out-of-bounds Removal
         if (entity.x < camLeft || entity.x > camRight || entity.y < camTop || entity.y > camBottom ||
@@ -3831,7 +3857,15 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
         }
 
         // Draw the bullet itself
-        ctx.fillStyle = bullet.color || color;
+        if (bullet.isGayShot) {
+            const rainbowHue = (performance.now() * 0.45 + (bullet.dnaIndex || 0) * 45) % 360;
+            const rainbowColor = `hsl(${rainbowHue}, 100%, 65%)`;
+            ctx.fillStyle = rainbowColor;
+            ctx.shadowColor = `hsl(${rainbowHue}, 100%, 60%)`;
+            ctx.shadowBlur = 8;
+        } else {
+            ctx.fillStyle = bullet.color || color;
+        }
         ctx.beginPath();
         ctx.arc(bullet.x, bullet.y, (bullet.size || 7) / 2, 0, Math.PI * 2, false);
         ctx.fill();

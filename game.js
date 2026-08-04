@@ -1385,14 +1385,14 @@ window.addEventListener('wheel', (event) => {
 
 /** 무기전환 테스트
  */
-if(event.key==='0'){
-    getWeaponFunck("_50_bmg_sniper")
-}else if (event.key === '1' ) {
-    getWeaponFunck("pistol")
-}else if(event.key === '2'){
-    getWeaponFunck("vector")
-}else if(event.key ==='3'){
-    getWeaponFunck("winchester")
+if (event.key === '1' || event.code === 'Digit1') {
+    getWeaponFunck("pistol");
+} else if (event.key === '2' || event.code === 'Digit2') {
+    getWeaponFunck("vector");
+} else if (event.key === '3' || event.code === 'Digit3') {
+    getWeaponFunck("winchester");
+} else if (event.key === '4' || event.code === 'Digit4' || event.key === '0' || event.code === 'Digit0') {
+    getWeaponFunck("_50_bmg_sniper");
 }
 
 

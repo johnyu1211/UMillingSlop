@@ -1235,7 +1235,7 @@ const mouse = {
     isDown: false
 };
 
-let zoomLevel = 0.92; // Balanced camera view (0.92x)
+let zoomLevel = 1.08; // Enlarged, immersive camera view (1.08x)
 let lastTime = performance.now(); // Initialize before the game loop
 
 const enemySpeed = 1.5; //enemyMoveSpeed for test it was 0.5
@@ -1495,7 +1495,7 @@ function getWeaponFunck(getWeapon){
         player.maxShootCooldown = 35
         player.maxReloadingCooldown = 2500
         baseDamage = 12;
-        zoomLevel = 0.92; // Balanced view!
+        zoomLevel = 1.08; // Enlarged view!
     }else if(getWeapon == "vector"){
         player.currentWeapon = weapons.vector
         player.speed = 5
@@ -1504,7 +1504,7 @@ function getWeaponFunck(getWeapon){
         player.maxShootCooldown = 10
         player.maxReloadingCooldown = 1200
         baseDamage = 7;
-        zoomLevel = 0.92;
+        zoomLevel = 1.08;
     }else if(getWeapon == "winchester"){
         player.currentWeapon = weapons.winchester
         player.speed = 4.9
@@ -1513,7 +1513,7 @@ function getWeaponFunck(getWeapon){
         player.maxShootCooldown = 75
         player.maxReloadingCooldown = 1800
         baseDamage = 10;
-        zoomLevel = 0.92;
+        zoomLevel = 1.08;
     }
 
     // Preserve player upgrade damage bonus across weapon switches!

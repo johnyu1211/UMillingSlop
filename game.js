@@ -911,6 +911,14 @@ const allLevelUpOptions = [
         } 
     },
     { 
+        title: '💥 Straight Shot', 
+        desc: 'Shotgun Pellets fire parallel in a side-by-side wall alignment instead of angular spread', 
+        condition: () => (!player.straightShotSelected),
+        effect: () => { 
+            player.straightShotSelected = true;
+        } 
+    },
+    { 
         title: '🔥 Crimson Flame I', 
         desc: 'Red Box: Crimson Bullets + Flower Sparks + Enemy Burn DoT', 
         condition: () => (player.redBoxLevel || 0) === 0,
@@ -2556,6 +2564,29 @@ function createBullet(array, x, y, targetX, targetY) {
                 glowColor: flameGlowColor,
                 isBurnBullet: isBurnBullet
             });
+        } else if (player.straightShotSelected && isShotgun) {
+            // Straight Shot: All pellets fire parallel in a side-by-side wall alignment with spacing!
+            const perpAngle = shootAngle + Math.PI / 2;
+            const spacing = 11; // 11px spacing between parallel side-by-side pellets
+            const totalWidth = (shotCount - 1) * spacing;
+            const startOffset = -totalWidth / 2;
+
+            for (let i = 0; i < shotCount; i++) {
+                const offset = startOffset + i * spacing;
+                const pX = muzzleX + Math.cos(perpAngle) * offset;
+                const pY = muzzleY + Math.sin(perpAngle) * offset;
+
+                array.push({ 
+                    x: pX,
+                    y: pY,
+                    velocityX: Math.cos(shootAngle) * speed,
+                    velocityY: Math.sin(shootAngle) * speed,
+                    size: bSize,
+                    color: finalColor,
+                    glowColor: flameGlowColor,
+                    isBurnBullet: isBurnBullet
+                });
+            }
         } else {
             const spread = (player.currentWeapon.ammoShotNum > 1) ? (player.currentWeapon.shotgunSpreadRange || 0.4) : 0.25;
             const startAngle = shootAngle - (spread / 2);

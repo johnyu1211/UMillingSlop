@@ -4148,7 +4148,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.setLineDash([10, 5]);
                     ctx.beginPath();
                     ctx.moveTo(eCenterX, eCenterY);
-                    ctx.lineTo(eCenterX + Math.cos(warningAngle) * 2500, eCenterY + Math.sin(warningAngle) * 2500);
+                    ctx.lineTo(eCenterX + Math.cos(warningAngle) * 5000, eCenterY + Math.sin(warningAngle) * 5000); // Infinite Range!
                     ctx.stroke();
                     ctx.setLineDash([]); // Reset line dash!
                 } else {
@@ -4161,8 +4161,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     }
 
                     const fireAngle = enemy.currentBeamAngle;
-                    const beamEndX = eCenterX + Math.cos(fireAngle) * 2500;
-                    const beamEndY = eCenterY + Math.sin(fireAngle) * 2500;
+                    const beamEndX = eCenterX + Math.cos(fireAngle) * 5000; // Infinite Range!
+                    const beamEndY = eCenterY + Math.sin(fireAngle) * 5000;
 
                     const remainingMs = enemy.laserTimer; // 0 ~ 2000ms
                     const fadeRatio = Math.min(1, Math.max(0, remainingMs / 420)); // Fade out in last 420ms

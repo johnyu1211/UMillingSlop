@@ -3094,9 +3094,17 @@ function update(deltaTime) {
     }
 
     if (gameState === 'startingRoom') {
-        const isLobbyValid = enemies.length === 2 && enemies[0].bodyType === 'machinegun_humanoid' && enemies[1].bodyType === 'assault_humanoid';
-        if (!isLobbyValid) {
-            spawnLobbyHumanoids();
+        const hasMachinegun = enemies.some(e => e.bodyType === 'machinegun_humanoid');
+        const hasAssault = enemies.some(e => e.bodyType === 'assault_humanoid');
+
+        const doorX = (typeof door !== 'undefined' && door && door.x !== undefined) ? door.x : (gameWorld.width / 2);
+        const doorY = (typeof door !== 'undefined' && door && door.y !== undefined) ? door.y : (gameWorld.height / 2);
+
+        if (!hasMachinegun) {
+            spawnEnemyAtPosition({ x: doorX - 180, y: doorY + 60 }, 'machinegun_humanoid');
+        }
+        if (!hasAssault) {
+            spawnEnemyAtPosition({ x: doorX + 180, y: doorY + 60 }, 'assault_humanoid');
         }
         checkDoorEntry();
         updateEnemies(deltaTime);

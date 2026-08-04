@@ -4646,15 +4646,15 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 ctx.filter = 'none'; // Ensure 100% PURE Lime Green colors!
 
                 if (laserProgress < 1000) {
-                    // Warning phase (1.0s): Track aim angle
+                    // Warning phase (1.0s): Track aim angle with sharp bright lime warning line!
                     enemy.currentBeamAngle = angleToPlayer;
-                    const progressRatio = Math.min(1, laserProgress / 1000);
+                    const progressRatio = Math.max(0.4, Math.min(1, laserProgress / 1000));
 
                     ctx.shadowBlur = 0;
                     ctx.shadowColor = 'transparent';
                     ctx.strokeStyle = `rgba(0, 255, 102, ${progressRatio * 0.95})`; // Electric Lime Green Warning Line
-                    ctx.lineWidth = 3;
-                    ctx.setLineDash([8, 4]);
+                    ctx.lineWidth = 4;
+                    ctx.setLineDash([10, 5]);
                     ctx.beginPath();
                     ctx.moveTo(eCenterX, eCenterY);
                     ctx.lineTo(eCenterX + Math.cos(angleToPlayer) * 5000, eCenterY + Math.sin(angleToPlayer) * 5000);

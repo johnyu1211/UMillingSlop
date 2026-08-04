@@ -2335,12 +2335,7 @@ function spawnEnemyAtPosition(presetPos, forcedBodyType = null) {
 }
 
 function spawnLobbyHumanoids() {
-    enemies.length = 0;
-    const doorX = (typeof door !== 'undefined' && door && door.x !== undefined) ? door.x : (gameWorld.width / 2);
-    const doorY = (typeof door !== 'undefined' && door && door.y !== undefined) ? door.y : (gameWorld.height / 2);
-
-    // Machinegun Humanoid Guard in Lobby
-    spawnEnemyAtPosition({ x: doorX + 140, y: doorY + 60 }, 'machinegun_humanoid');
+    enemies.length = 0; // Clear all enemies in lobby startingRoom
 }
 
 function spawnEnemy(presetPos = null, forcedBodyType = null) {
@@ -3117,13 +3112,6 @@ function update(deltaTime) {
     }
 
     if (gameState === 'startingRoom') {
-        const hasMachinegun = enemies.some(e => e.bodyType === 'machinegun_humanoid');
-        const doorX = (typeof door !== 'undefined' && door && door.x !== undefined) ? door.x : (gameWorld.width / 2);
-        const doorY = (typeof door !== 'undefined' && door && door.y !== undefined) ? door.y : (gameWorld.height / 2);
-
-        if (!hasMachinegun) {
-            spawnEnemyAtPosition({ x: doorX + 140, y: doorY + 60 }, 'machinegun_humanoid');
-        }
         checkDoorEntry();
         updateEnemies(deltaTime);
         handleCollisions();

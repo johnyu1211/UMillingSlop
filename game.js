@@ -1195,13 +1195,13 @@ function drawWeaponSelectPanelLeftBottom() {
 
         // Render Number Shortcut Badge [1, 2, 3, 4] at top-left of each slot box
         ctx.save();
-        ctx.fillStyle = isSelected ? '#FFD700' : 'rgba(255, 255, 255, 0.9)';
-        ctx.font = '900 14px sans-serif';
+        ctx.fillStyle = isSelected ? '#FFD700' : 'rgba(255, 255, 255, 0.95)';
+        ctx.font = '900 20px sans-serif';
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
         ctx.shadowColor = '#000000';
-        ctx.shadowBlur = 4;
-        ctx.fillText(`${index + 1}`, slotX + 4, slotY + 3);
+        ctx.shadowBlur = 6;
+        ctx.fillText(`${index + 1}`, slotX + 5, slotY + 2);
         ctx.restore();
     });
 

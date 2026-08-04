@@ -4313,12 +4313,12 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
-                // Cannon Laser Head AI: Target alignment + 0.4s HOLD before firing straight Hot Pink pulse beam!
+                // Cannon Laser Head AI: Target alignment + 1.2s HOLD before firing straight Hot Pink pulse beam!
                 if (enemy.bodyType === 'cannon_laser_head') {
                     if (enemy.timeUntilNextAttack <= 0) {
                         enemy.isFiringCannonLaser = true;
-                        enemy.cannonLaserTimer = 2400; // 1.2s track + 0.4s hold + 0.8s burst beam!
-                        enemy.timeUntilNextAttack = enemy.attackCooldown || 3800;
+                        enemy.cannonLaserTimer = 3200; // 1.2s track + 1.2s hold + 0.8s burst beam!
+                        enemy.timeUntilNextAttack = enemy.attackCooldown || 4200;
                     }
 
                     if (enemy.isFiringCannonLaser) {
@@ -4333,18 +4333,18 @@ function updateEnemies(deltaTime) {
                         const pCenterY = player.y + 45;
                         const angleToPlayer = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
 
-                        const elapsed = 2400 - enemy.cannonLaserTimer;
+                        const elapsed = 3200 - enemy.cannonLaserTimer;
                         if (elapsed < 1200) {
                             // Phase 1 (0 ~ 1.2s): Track aim angle towards player!
                             enemy.cannonAimAngle = angleToPlayer;
                             moveX = Math.cos(angleToPlayer) * curSpeed * 0.4;
                             moveY = Math.sin(angleToPlayer) * curSpeed * 0.4;
-                        } else if (elapsed < 1600) {
-                            // Phase 2 (1.2s ~ 1.6s, EXACT 0.4s HOLD): Freeze position & aim angle completely!
+                        } else if (elapsed < 2400) {
+                            // Phase 2 (1.2s ~ 2.4s, EXACT 1.2s HOLD): Freeze position & aim angle completely!
                             moveX = 0;
                             moveY = 0;
                         } else {
-                            // Phase 3 (1.6s ~ 2.4s, 0.8s Burst Fire): Freeze position while firing straight beam!
+                            // Phase 3 (2.4s ~ 3.2s, 0.8s Burst Fire): Freeze position while firing straight beam!
                             moveX = 0;
                             moveY = 0;
                         }
@@ -4521,18 +4521,18 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
             // Render Continuous Cannon Laser Beam if active for cannon_laser_head
             if (enemy.bodyType === 'cannon_laser_head' && enemy.isFiringCannonLaser) {
-                const elapsed = (2400 - enemy.cannonLaserTimer);
+                const elapsed = (3200 - enemy.cannonLaserTimer);
                 const fireAngle = enemy.cannonAimAngle || angleToPlayer;
                 ctx.save();
                 ctx.filter = 'none';
 
-                if (elapsed < 1600) {
-                    // Phase 1 & 2 (0 ~ 1.6s): Warning Target Alignment & 0.4s Fixed Hold!
+                if (elapsed < 2400) {
+                    // Phase 1 & 2 (0 ~ 2.4s): Warning Target Alignment (1.2s) & Fixed Hold (1.2s)!
                     const isHoldPhase = (elapsed >= 1200);
                     ctx.shadowBlur = 0;
                     ctx.shadowColor = 'transparent';
                     ctx.strokeStyle = isHoldPhase ? 'rgba(255, 20, 147, 0.95)' : 'rgba(255, 105, 180, 0.7)';
-                    ctx.lineWidth = isHoldPhase ? 4 : 2;
+                    ctx.lineWidth = isHoldPhase ? 5 : 2;
                     if (!isHoldPhase) ctx.setLineDash([8, 4]);
 
                     ctx.beginPath();
@@ -4541,15 +4541,15 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
-                    // Phase 3 (1.6s ~ 2.4s): Hot Pink Cannon Pulse Beam (Thin -> Thick 34px -> Fade Dissolve)!
-                    const beamProgress = (elapsed - 1600) / 800; // 0.0 -> 1.0
+                    // Phase 3 (2.4s ~ 3.2s): Hot Pink Cannon Pulse Beam (Thin -> Super Thick 60px -> Fade Dissolve)!
+                    const beamProgress = (elapsed - 2400) / 800; // 0.0 -> 1.0
                     
-                    // Width expansion: 3px -> 34px -> 0px
+                    // Width expansion: 3px -> 60px -> 0px (Super Massive Cannon Blast!)
                     let beamWidth = 3;
                     if (beamProgress < 0.25) {
-                        beamWidth = 3 + (34 - 3) * (beamProgress / 0.25); // Expand to 34px fast
+                        beamWidth = 3 + (60 - 3) * (beamProgress / 0.25); // Expand to 60px fast
                     } else {
-                        beamWidth = 34 * (1 - (beamProgress - 0.25) / 0.75); // Shrink to 0px
+                        beamWidth = 60 * (1 - (beamProgress - 0.25) / 0.75); // Shrink to 0px
                     }
 
                     const alpha = Math.max(0, 1.0 - beamProgress); // Smooth dissolve alpha
@@ -4558,7 +4558,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
                     // Hot Pink Outer Glow & Beam Body
                     ctx.shadowColor = '#FF1493';
-                    ctx.shadowBlur = 20 * alpha;
+                    ctx.shadowBlur = 24 * alpha;
 
                     // Outer Hot Pink Glow Line
                     ctx.strokeStyle = `rgba(255, 20, 147, ${alpha * 0.9})`;
@@ -4570,7 +4570,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
 
                     // Inner White Hot Core Line
                     ctx.strokeStyle = `rgba(255, 240, 245, ${alpha * 0.95})`;
-                    ctx.lineWidth = Math.max(1, beamWidth * 0.4);
+                    ctx.lineWidth = Math.max(1, beamWidth * 0.45);
                     ctx.beginPath();
                     ctx.moveTo(eCenterX, eCenterY);
                     ctx.lineTo(beamEndX, beamEndY);
@@ -4579,7 +4579,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     // Beam Hit Check on Player
                     const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
                     if (distToBeam < (beamWidth / 2 + 20)) {
-                        applyPlayerDamage(8, "Cannon Laser Head (Pink Beam Blast)");
+                        applyPlayerDamage(10, "Cannon Laser Head (Pink Beam Blast)");
                     }
                 }
                 ctx.restore();

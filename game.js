@@ -4056,7 +4056,7 @@ function updateEnemies(deltaTime) {
                 enemy.dashVectorX = Math.cos(dashAngle) * dashSpeed;
                 enemy.dashVectorY = Math.sin(dashAngle) * dashSpeed;
             }
-        } else if (enemy.timeUntilNextAttack <= 0 && enemy.bodyType !== 'laser_eye' && (enemy.shotCount || 0) > 0) {
+        } else if (enemy.timeUntilNextAttack <= 0 && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && (enemy.shotCount || 0) > 0) {
             if (enemy.bodyType === 'three_head' && enemy.headPattern === 1) {
                 // Head Throw Attack (Yo-Yo Head Surge)
                 enemy.isThrowing = true;

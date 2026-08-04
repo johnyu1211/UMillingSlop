@@ -4520,6 +4520,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
     const eX = enemy.x;
     const eY = enemy.y;
     const eSize = enemy.size;
+    const pCenterX = player ? player.x + 45 : 0;
+    const pCenterY = player ? player.y + 45 : 0;
 
     if (enemy.bodyType === 'red_kamikaze_exploder' && enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);

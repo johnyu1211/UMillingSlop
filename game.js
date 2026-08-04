@@ -4505,18 +4505,6 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
     const eY = enemy.y;
     const eSize = enemy.size;
 
-    // Horizontal Flip Guard: Facing Left if player is to the left of the monster center!
-    const pCenterX = player.x + 45;
-    const eCenterX = eX + eSize / 2;
-    const facingLeft = pCenterX < eCenterX;
-
-    ctx.save();
-    if (facingLeft && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'green_laser_eye') {
-        ctx.translate(eCenterX, eY + eSize / 2);
-        ctx.scale(-1, 1);
-        ctx.translate(-eCenterX, -(eY + eSize / 2));
-    }
-
     if (enemy.bodyType === 'red_kamikaze_exploder' && enemy.customSprite) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
@@ -4945,9 +4933,6 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
         ctx.drawImage(basicenEmySprite, srcX, srcY, srcW, srcH, 0, 0, drawS, drawS);
         ctx.restore();
 
-        // Bottom-Left (x3, y3) gets Pos 1 (Original Bottom-Left Slice)
-        ctx.drawImage(basicenEmySprite, srcX, srcY, srcW, srcH, x3, y3, drawS, drawS);
-
         // Bottom-Right (x4, y4) gets Pos 2 (flipped H)
         ctx.save();
         ctx.translate(x4 + drawS, y4);
@@ -4960,7 +4945,6 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
         // Standard Enemy Sprite (1:1 Ratio)
         ctx.drawImage(basicenEmySprite, sourceX, sy, spriteWidth, spriteHeight, eX, eY, eSize, eSize);
     }
-    ctx.restore(); // Restore horizontal flip facing state!
 }
 
 function drawEnemies() {
@@ -4999,6 +4983,16 @@ function drawEnemies() {
             ctx.filter = enemy.colorFilter;
         }
 
+        // Apply Horizontal Facing Flip safely inside isolated drawEnemies loop!
+        const pCenterX = player.x + 45;
+        const eCenterX = enemy.x + enemy.size / 2;
+        const facingLeft = pCenterX < eCenterX;
+        if (facingLeft && enemy.bodyType !== 'laser_eye' && enemy.bodyType !== 'cannon_laser_head' && enemy.bodyType !== 'green_laser_eye') {
+            ctx.translate(eCenterX, enemy.y + enemy.size / 2);
+            ctx.scale(-1, 1);
+            ctx.translate(-eCenterX, -(enemy.y + enemy.size / 2));
+        }
+
         if (enemy.justHit) {
             const timeSinceHit = performance.now() - enemy.hitTime;
             if (timeSinceHit < 100) {
@@ -5020,7 +5014,7 @@ function drawEnemies() {
             renderMutantEnemySprite(enemy, sourceX, 0, spriteWidth, spriteHeight);
         }
 
-        ctx.restore();
+        ctx.restore(); // 100% SAFE RESTORE FOR EVERY ENEMY!
     });
 }
 

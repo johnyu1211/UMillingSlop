@@ -4911,7 +4911,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 if (enemy.dodgeRushTimer > 0) {
                     row = 0; // Row 1 (Index 0, y=0): High-Speed Dodge Counter Dash Motion!
                 } else if (enemy.isShieldActive && enemy.shieldTimer > 0) {
-                    row = 1; // Row 2 (Index 1, y=514): Protective Shield Guard Motion on Hit during Reload!
+                    row = 4; // Row 5 (Index 4, y=2056): Protective Shield Guard Motion on Hit!
                 } else if (enemy.bodyType === 'machinegun_humanoid') {
                     // Row 4 (Index 3, y=1542): Attack ONLY during full active burst firing duration!
                     const totalFiringDuration = (enemy.lastBurstCount || 23) * 65 + 250;

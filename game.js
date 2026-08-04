@@ -4541,15 +4541,15 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.stroke();
                     ctx.setLineDash([]);
                 } else {
-                    // Phase 3 (1.8s ~ 2.6s): Hot Pink Cannon Pulse Beam (Thin -> Super Thick 60px -> Fade Dissolve)!
+                    // Phase 3 (1.8s ~ 2.6s): Hot Pink Cannon Pulse Beam (Thin -> Super Massive 110px -> Fade Dissolve)!
                     const beamProgress = (elapsed - 1800) / 800; // 0.0 -> 1.0
                     
-                    // Width expansion: 3px -> 60px -> 0px (Super Massive Cannon Blast!)
+                    // Ultra Fast Expansion: 3px -> 110px within first 10% progress!
                     let beamWidth = 3;
-                    if (beamProgress < 0.25) {
-                        beamWidth = 3 + (60 - 3) * (beamProgress / 0.25); // Expand to 60px fast
+                    if (beamProgress < 0.10) {
+                        beamWidth = 3 + (110 - 3) * (beamProgress / 0.10); // Instant 110px Boom!
                     } else {
-                        beamWidth = 60 * (1 - (beamProgress - 0.25) / 0.75); // Shrink to 0px
+                        beamWidth = 110 * (1 - (beamProgress - 0.10) / 0.90); // Smooth dissolve
                     }
 
                     const alpha = Math.max(0, 1.0 - beamProgress); // Smooth dissolve alpha

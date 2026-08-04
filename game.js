@@ -2330,12 +2330,26 @@ function startReloading() {
     }
 }
 
-function spawnEnemy() {
-    if (gameState !== 'gameStarted') return;     
-    const margin = 80;
+function spawnEnemyAtPosition(presetPos, forcedBodyType = null) {
+    return spawnEnemy(presetPos, forcedBodyType);
+}
 
+function spawnLobbyHumanoids() {
+    enemies.length = 0;
+    const doorX = (typeof door !== 'undefined' && door && door.x !== undefined) ? door.x : (gameWorld.width / 2);
+    const doorY = (typeof door !== 'undefined' && door && door.y !== undefined) ? door.y : (gameWorld.height / 2);
+
+    // 1. Machinegun Humanoid (Silver Original) on Left side of Lobby Door
+    spawnEnemyAtPosition({ x: doorX - 180, y: doorY + 60 }, 'machinegun_humanoid');
+    // 2. Assault Humanoid (Crimson Red) on Right side of Lobby Door
+    spawnEnemyAtPosition({ x: doorX + 180, y: doorY + 60 }, 'assault_humanoid');
+}
+
+function spawnEnemy(presetPos = null, forcedBodyType = null) {
+    if (!player) return;
+
+    let tier = 1; 
     const pLvl = player.level || 1;
-    let tier = 1;
     const rand = Math.random();
 
     if (pLvl >= 6 && rand < 0.2) {
@@ -2348,10 +2362,10 @@ function spawnEnemy() {
 
     // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
     const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid', 'assault_humanoid'];
-    let bodyType = basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
+    let bodyType = forcedBodyType || basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
     // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
-    if (Math.random() < 0.15) {
+    if (!forcedBodyType && Math.random() < 0.15) {
         if (pLvl >= 5 && Math.random() < 0.5) {
             bodyType = 'red_kamikaze_exploder';
         } else if (pLvl >= 3) {
@@ -2364,11 +2378,10 @@ function spawnEnemy() {
     const minSpawnDist = isKamikaze ? 720 : 260; // Off-screen for Kamikaze!
     const maxSpawnDist = isKamikaze ? 950 : 420;
 
-    let position = { x: 0, y: 0 };
-    let validPos = false;
+    let position = presetPos ? { ...presetPos } : { x: 0, y: 0 };
+    let validPos = !!presetPos;
     let attempts = 0;
 
-    const pCenterX = player.x + (player.size ? player.size / 2 : 45);
     const pCenterY = player.y + (player.size ? player.size / 2 : 45);
 
     while (!validPos && attempts < 40) {
@@ -3078,6 +3091,9 @@ function update(deltaTime) {
     }
 
     if (gameState === 'startingRoom') {
+        if (enemies.length === 0) {
+            spawnLobbyHumanoids();
+        }
         checkDoorEntry();
         updateEnemies(deltaTime);
         handleCollisions();
@@ -4484,9 +4500,9 @@ function updateEnemies(deltaTime) {
         }
     }
 
-    // Safety Auto-Respawn: Ensure field active enemies count safely refilled frame-by-frame!
+    // Safety Auto-Respawn: Ensure field active enemies count safely refilled frame-by-frame (Only during active gameStarted phase!)
     const targetMonsterCount = 6;
-    if (enemies.length < targetMonsterCount) {
+    if (gameState === 'gameStarted' && enemies.length < targetMonsterCount) {
         spawnEnemy();
     }
 }

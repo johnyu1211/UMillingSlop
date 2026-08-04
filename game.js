@@ -5298,7 +5298,7 @@ function handleCollisions() {
                     if (enemy.timeUntilNextAttack > 0 && !isFiringNow) {
                         enemy.isShieldActive = true;
                         enemy.shieldTimer = 750; // 750ms Protective Guard Posture!
-                        hitDmg *= 0.15; // 85% Damage Reduction Block!
+                        hitDmg *= 0.05; // Exactly 95% Damage Reduction Block! (Takes only 5% damage)
                     }
                 }
 

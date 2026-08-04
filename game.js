@@ -890,13 +890,24 @@ const allLevelUpOptions = [
     { title: '👟 Move Speed (+0.5)', desc: 'Increases player movement speed', effect: () => { player.speed += 0.5; } },
     { title: '📦 Max Ammo (+5)', desc: 'Increases magazine size & refills ammo', effect: () => { player.maxAmmo += 5; player.ammo = player.maxAmmo; } },
     { 
-        title: '💥 Shot Roll', 
+        title: '💥 Shot Roll I', 
         desc: 'Shotgun Pellets +3 & Massive Recoil Shot-Roll with WASD Movement & Afterimages', 
         condition: () => (!player.shotRollSelected),
         effect: () => { 
             player.shotRollSelected = true;
             player.shotgunPelletBonus = (player.shotgunPelletBonus || 0) + 3; 
             player.shotgunRecoilBonus = (player.shotgunRecoilBonus || 0) + 8; 
+        } 
+    },
+    { 
+        title: '💥 Shot Roll II', 
+        desc: 'Mag size 1, Super Fast Reload, No Back-Recoil. 2x Speed when moving away from aim (0.8s) + Grey Afterimages', 
+        condition: () => (player.shotRollSelected && !player.shotRoll2Selected),
+        effect: () => { 
+            player.shotRoll2Selected = true;
+            player.maxAmmo = 1;
+            player.ammo = 1;
+            player.maxReloadingCooldown = Math.max(300, player.maxReloadingCooldown * 0.45);
         } 
     },
     { 
@@ -2485,11 +2496,19 @@ function createBullet(array, x, y, targetX, targetY) {
         if (isShotgun) {
             shotCount += (player.shotgunPelletBonus || 0);
 
-            // Trigger Recoil Shot-Roll & Motion Afterimages!
-            const recoilForce = 13 + (player.shotgunRecoilBonus || 0);
-            player.shotRollVx = -Math.cos(shootAngle) * recoilForce;
-            player.shotRollVy = -Math.sin(shootAngle) * recoilForce;
-            player.shotRollTimer = 380; // 380ms Shot-Roll duration
+            if (player.shotRoll2Selected) {
+                // Shot Roll II: No back-recoil! Instead trigger 0.8s Non-Aim direction 2x Speed boost!
+                player.nonAimBoostTimer = 800; // 800ms
+                player.shotRollTimer = 0;
+                player.shotRollVx = 0;
+                player.shotRollVy = 0;
+            } else {
+                // Shot Roll I: Recoil Shot-Roll & Motion Afterimages!
+                const recoilForce = 13 + (player.shotgunRecoilBonus || 0);
+                player.shotRollVx = -Math.cos(shootAngle) * recoilForce;
+                player.shotRollVy = -Math.sin(shootAngle) * recoilForce;
+                player.shotRollTimer = 380; // 380ms Shot-Roll duration
+            }
         }
 
         if (isRedBuff && redLvl >= 2) {
@@ -2735,7 +2754,35 @@ function update(deltaTime) {
     }
     
     
-    const moveSpeed = player.isDodging ? player.dodgeSpeed : player.speed;
+    let moveSpeed = player.isDodging ? player.dodgeSpeed : player.speed;
+
+    // --- SHOT ROLL II: 2x Speed for Non-Aim Movement (0.8s) + Grey Afterimages ---
+    if (player.shotRoll2Selected && player.nonAimBoostTimer > 0) {
+        player.nonAimBoostTimer -= (deltaTime || 16);
+
+        // Check if movement direction is away from facing direction
+        let isNonAimMoving = false;
+        if (player.lookingRight && (keys['a'] || keys['A'] || keys['w'] || keys['W'] || keys['s'] || keys['S'])) {
+            isNonAimMoving = true;
+        } else if (!player.lookingRight && (keys['d'] || keys['D'] || keys['w'] || keys['W'] || keys['s'] || keys['S'])) {
+            isNonAimMoving = true;
+        }
+
+        if (isNonAimMoving) {
+            moveSpeed *= 2.0; // 2x Move Speed!
+
+            // Spawn Grey Afterimages!
+            if (Math.random() < 0.7) {
+                greyAfterimages.push({
+                    x: player.x,
+                    y: player.y,
+                    size: player.size,
+                    opacity: 0.75
+                });
+            }
+        }
+    }
+
     let nextX = player.x;
     let nextY = player.y;
 

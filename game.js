@@ -58,58 +58,8 @@ function getPooledBullet() {
 }
 
 function updateAndDrawYellowBulletTrails(ctx) {
-    if (!player.gayShotSelected || !player.shotRoll2Selected) return;
-
-    // Connect active bullet trajectory to render ONE SINGLE GIANT CONTINUOUS BEAM TRAIL!
-    ctx.save();
-    ctx.strokeStyle = '#FFD700';
-    ctx.shadowColor = '#FFA500';
-    ctx.shadowBlur = 14;
-    ctx.lineWidth = 14;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.globalAlpha = 0.75;
-
-    for (let i = 0; i < playerBullets.length; i++) {
-        const bullet = playerBullets[i];
-        if (bullet.isGayShot && bullet.originX !== undefined) {
-            // Linear Gradient: Completely transparent at origin, smooth fade-in towards bullet head!
-            const grad = ctx.createLinearGradient(bullet.originX, bullet.originY, bullet.x, bullet.y);
-            grad.addColorStop(0, 'rgba(255, 215, 0, 0.0)');    // 100% Transparent at start point!
-            grad.addColorStop(0.35, 'rgba(255, 215, 0, 0.4)'); // Smooth fade-in
-            grad.addColorStop(1.0, 'rgba(255, 215, 0, 0.95)'); // Solid bright yellow at head!
-
-            ctx.strokeStyle = grad;
-            ctx.beginPath();
-            ctx.moveTo(bullet.originX, bullet.originY);
-            ctx.lineTo(bullet.x, bullet.y);
-            ctx.stroke();
-
-            // 1. Slow Enemy Effect along the giant beam path
-            for (let eIdx = 0; eIdx < enemies.length; eIdx++) {
-                const enemy = enemies[eIdx];
-                if (!enemy) continue;
-                const dist = Math.hypot(enemy.x + enemy.size / 2 - bullet.x, enemy.y + enemy.size / 2 - bullet.y);
-                if (dist < (enemy.size / 2 + 24)) {
-                    if (!enemy.baseSpeed) enemy.baseSpeed = enemy.speed;
-                    enemy.yellowSlowTimer = 1500; // 1.5s slow down!
-                }
-            }
-
-            // 2. Destroy Wall Effect along the giant beam path
-            for (let wIdx = wallEvents.length - 1; wIdx >= 0; wIdx--) {
-                const w = wallEvents[wIdx];
-                if (w.state === 'landed') {
-                    if (bullet.x > w.x - 12 && bullet.x < w.x + 76 &&
-                        bullet.y > w.y - 12 && bullet.y < w.y + 76) {
-                        createParticles(w.x + 32, w.y + 32, 0);
-                        wallEvents.splice(wIdx, 1); // Instantly destroy wall!
-                    }
-                }
-            }
-        }
-    }
-    ctx.restore();
+    // Long yellow beam trail rendering completely removed as requested!
+    return;
 }
 
 function updateAndDrawGreyAfterimages(ctx) {

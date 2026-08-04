@@ -4033,17 +4033,30 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
         }
     });
 
-    // Single-Pass Draw Call respecting individual bullet.color (e.g. #52CBBC for Machinegun)
+    // Single-Pass Draw Call respecting individual bullet.color and rectangular shape
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
     for (let i = 0; i < array.length; i++) {
         const bullet = array[i];
         if (!bullet.isRainbowShot) {
-            const r = (bullet.size || 7) / 2;
-            ctx.fillStyle = bullet.color || color;
-            ctx.beginPath();
-            ctx.arc(bullet.x, bullet.y, r, 0, Math.PI * 2);
-            ctx.fill();
+            if (bullet.isRectBullet) {
+                // Elongated Rotated Rectangular Energy Bullet for Humanoids!
+                const bAngle = Math.atan2(bullet.velocityY || 0, bullet.velocityX || 0);
+                const rectLength = 18;
+                const rectWidth = 5;
+                ctx.save();
+                ctx.translate(bullet.x, bullet.y);
+                ctx.rotate(bAngle);
+                ctx.fillStyle = bullet.color || '#52CBBC';
+                ctx.fillRect(-rectLength / 2, -rectWidth / 2, rectLength, rectWidth);
+                ctx.restore();
+            } else {
+                const r = (bullet.size || 7) / 2;
+                ctx.fillStyle = bullet.color || color;
+                ctx.beginPath();
+                ctx.arc(bullet.x, bullet.y, r, 0, Math.PI * 2);
+                ctx.fill();
+            }
         }
     }
     ctx.shadowBlur = 0;
@@ -4144,6 +4157,7 @@ function updateEnemies(deltaTime) {
                                     velocityY: Math.sin(curAngle) * 6.5,
                                     size: 7,
                                     color: (enemy.bodyType === 'assault_humanoid') ? '#52CBBC' : bColor,
+                                    isRectBullet: true,
                                     tier: enemy.tier || 1
                                 });
                             }

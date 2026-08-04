@@ -4702,11 +4702,15 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.lineTo(beamEndX, beamEndY);
                     ctx.stroke();
 
-                    // Continuous Super Low Tick Damage (1 DMG per tick - ultra weak!)
+                    // Continuous Super Low Tick Damage (1 DMG per 300ms - ultra heavily nerfed!)
                     const pRadius = 24;
                     const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
                     if (distToBeam < pRadius) {
-                        applyPlayerDamage(1, "Green Laser Eye (Continuous Beam Sweep)");
+                        const now = Date.now();
+                        if (!enemy.lastGreenDamageTime || (now - enemy.lastGreenDamageTime) > 300) {
+                            enemy.lastGreenDamageTime = now;
+                            applyPlayerDamage(1, "Green Laser Eye (Continuous Beam Sweep)");
+                        }
                     }
                 }
                 ctx.restore();

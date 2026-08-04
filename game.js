@@ -2481,28 +2481,28 @@ function spawnEnemy() {
         speedMult *= 1.1;
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
-        colorFilter = 'hue-rotate(290deg) saturate(260%) brightness(1.25)'; // Hot Magenta / Pink Filter!
+        colorFilter = 'hue-rotate(290deg) saturate(220%) contrast(1.1)'; // Hot Magenta / Pink Filter!
     } else if (bodyType === 'green_laser_eye') {
         sizeMult *= 0.75;
         hpMult = 0.01;     // Glass Cannon (1 Hit Killable)!
         speedMult *= 1.25;
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
-        colorFilter = 'hue-rotate(100deg) saturate(280%) brightness(1.2)'; // Electric Lime Green Filter!
+        colorFilter = 'hue-rotate(100deg) saturate(220%) contrast(1.1)'; // Electric Lime Green Filter!
     } else if (bodyType === 'machinegun_humanoid') {
         sizeMult *= 1.2;
         hpMult *= 2.2;
         speedMult *= 1.0;
         shotCount = 3;     // Rapid 3-burst shooter
         customSprite = 'OLD/RoBChar.png';
-        colorFilter = 'none';
+        colorFilter = 'none'; // Pure original steel
     } else if (bodyType === 'assault_humanoid') {
         sizeMult *= 1.25;
         hpMult *= 2.5;
         speedMult *= 1.35; // Fast Charger
         shotCount = 3;     // Rush 3-burst shooter
         customSprite = 'OLD/RoBChar.png';
-        colorFilter = 'hue-rotate(330deg) saturate(320%) brightness(1.2)'; // Deep Red Filter per request!
+        colorFilter = 'hue-rotate(330deg) saturate(240%) contrast(1.1)'; // Clean Crimson Red LED Filter!
     }
 
     // 45% chance for Melee Charger/Berserker enemy (attackType: 'dash') for Tier 1 & 2

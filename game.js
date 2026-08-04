@@ -419,7 +419,7 @@ let PlayercollisionY= player.y ;
 let PlayercollisionSize= player.size -SpriteColisionGap; 
 
 let playerSprite = new Image();
-playerSprite.src = "player.png"; 
+playerSprite.src = "Player.png"; 
 
 
 let animationTimer = 0; // Explicit initialization is key! 

@@ -1364,6 +1364,9 @@ document.addEventListener('keydown', (event) => {
         }
     } else {
         keys[event.key] = true;
+        keys[event.key.toLowerCase()] = true;
+        keys[event.key.toUpperCase()] = true;
+        if (event.code) keys[event.code] = true;
     }
 
     
@@ -1400,8 +1403,22 @@ if (event.key === '1' || event.code === 'Digit1') {
 
 });
 
+function resetAllInputKeys() {
+    for (let k in keys) {
+        keys[k] = false;
+    }
+}
+window.addEventListener('blur', resetAllInputKeys);
+window.addEventListener('focus', resetAllInputKeys);
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) resetAllInputKeys();
+});
+
 document.addEventListener('keyup', (event) => {
     keys[event.key] = false;
+    keys[event.key.toLowerCase()] = false;
+    keys[event.key.toUpperCase()] = false;
+    if (event.code) keys[event.code] = false;
 });
 
 document.addEventListener('keydown', (event) => {

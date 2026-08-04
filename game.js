@@ -3222,20 +3222,8 @@ function drawAmbientLighting(ctx) {
     ctx.fillStyle = radGrad;
     ctx.fillRect(camera.x - 300, camera.y - 300, canvas.width + 600, canvas.height + 600);
 
-    // 2. Additive Emissive Glows for Gun, Bullets, and Monster Cores (lighter - 100% additive, non-destructive!)
+    // 2. Additive Emissive Glows for Monster Cores & Enemy Bullets
     ctx.globalCompositeOperation = 'lighter';
-
-    // A. Player Bullets Gold-Yellow Glow
-    for (let i = 0; i < playerBullets.length; i++) {
-        const b = playerBullets[i];
-        const bGrad = ctx.createRadialGradient(b.x, b.y, 1, b.x, b.y, 14);
-        bGrad.addColorStop(0, 'rgba(255, 235, 120, 0.7)');
-        bGrad.addColorStop(1, 'rgba(0, 0, 0, 0)');
-        ctx.fillStyle = bGrad;
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, 14, 0, Math.PI * 2);
-        ctx.fill();
-    }
 
     // B. Enemy Bullets Tier Glow
     for (let i = 0; i < enemyBullets.length; i++) {

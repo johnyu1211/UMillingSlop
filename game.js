@@ -2484,7 +2484,7 @@ function spawnEnemy() {
         colorFilter = 'hue-rotate(290deg) saturate(260%) brightness(1.25)'; // Hot Magenta / Pink Filter!
     } else if (bodyType === 'green_laser_eye') {
         sizeMult *= 0.75;
-        hpMult *= 3.0;     // Sustained Tank!
+        hpMult = 0.01;     // Glass Cannon (1 Hit Killable)!
         speedMult *= 1.25;
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
@@ -2521,7 +2521,7 @@ function spawnEnemy() {
 
     const baseEnemyHp = 30 + (pLvl - 1) * 8;
     const finalSize = Math.floor((enemySize || 45) * sizeMult);
-    const finalHp = Math.floor(baseEnemyHp * hpMult);
+    const finalHp = (bodyType === 'green_laser_eye') ? 1 : Math.max(1, Math.floor(baseEnemyHp * hpMult));
 
     const newEnemy = {
         x: position.x,
@@ -4695,11 +4695,11 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     ctx.lineTo(beamEndX, beamEndY);
                     ctx.stroke();
 
-                    // Continuous Low Tick Damage (2 DMG per tick - softer than Blue laser)
+                    // Continuous Super Low Tick Damage (1 DMG per tick - ultra weak!)
                     const pRadius = 24;
                     const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
                     if (distToBeam < pRadius) {
-                        applyPlayerDamage(2, "Green Laser Eye (Continuous Beam Sweep)");
+                        applyPlayerDamage(1, "Green Laser Eye (Continuous Beam Sweep)");
                     }
                 }
                 ctx.restore();

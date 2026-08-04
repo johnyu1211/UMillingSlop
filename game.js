@@ -4149,6 +4149,7 @@ function updateEnemies(deltaTime) {
                     const machinegunMaxAmmo = 30; // Machinegun's standard max ammo is 30
                     const halfAmmoBonus = Math.floor(machinegunMaxAmmo / 2); // 15 shots bonus!
                     const burstCount = baseBurst + halfAmmoBonus; // Formula: (5~8) + (Machinegun MaxAmmo / 2) = 20~23 shots!
+                    enemy.lastBurstCount = burstCount; // Store total burst shot count for dynamic animation sync!
                     for (let burstIndex = 0; burstIndex < burstCount; burstIndex++) {
                         setTimeout(() => {
                             if (enemy && enemy.hp > 0) {
@@ -4816,8 +4817,9 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                 let row = 2; // Row 2 (y=1028): Move/Standard Animation
 
                 if (enemy.bodyType === 'machinegun_humanoid') {
-                    // Row 3 (y=1542): Attack ONLY during active 3-burst firing!
-                    const isFiringNow = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < 450);
+                    // Row 3 (y=1542): Attack ONLY during full active burst firing duration!
+                    const totalFiringDuration = (enemy.lastBurstCount || 23) * 65 + 250;
+                    const isFiringNow = enemy.lastAttackAnimTime && (Date.now() - enemy.lastAttackAnimTime < totalFiringDuration);
                     if (isFiringNow) {
                         row = 3;
                     }

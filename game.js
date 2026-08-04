@@ -2347,6 +2347,7 @@ function spawnLobbyHumanoids() {
 
 function spawnEnemy(presetPos = null, forcedBodyType = null) {
     if (!player) return;
+    if (gameState !== 'gameStarted' && !presetPos) return; // 100% STRICT GUARD: Block all random enemy spawns in lobby startingRoom!
 
     let tier = 1; 
     const pLvl = player.level || 1;

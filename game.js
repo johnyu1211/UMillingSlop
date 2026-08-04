@@ -2539,6 +2539,12 @@ function spawnEnemy() {
         initialCooldown = 300;
     }
 
+    // 100% PURE Isolated State Guard: Force clear customSprite for standard mutant bodyTypes!
+    const hasCustomSprite = ['kamikaze_exploder', 'red_kamikaze_exploder', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid', 'assault_humanoid'].includes(bodyType);
+    if (!hasCustomSprite) {
+        customSprite = null;
+    }
+
     const baseEnemyHp = 30 + (pLvl - 1) * 8;
     const finalSize = Math.floor((enemySize || 45) * sizeMult);
     const finalHp = (bodyType === 'green_laser_eye') ? 1 : Math.max(1, Math.floor(baseEnemyHp * hpMult));
@@ -4758,7 +4764,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
         }
     }
 
-    if (enemy.customSprite) {
+    const validCustomSpriteTypes = ['kamikaze_exploder', 'red_kamikaze_exploder', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid', 'assault_humanoid'];
+    if (enemy.customSprite && validCustomSpriteTypes.includes(enemy.bodyType)) {
         const cImg = getCachedImage(enemy.customSprite);
         if (cImg && cImg.complete && cImg.naturalWidth !== 0) {
             if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {

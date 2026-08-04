@@ -4146,10 +4146,9 @@ function updateEnemies(deltaTime) {
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
                     enemy.lastAttackAnimTime = Date.now(); // Record attack animation start timestamp!
                     const baseBurst = Math.floor(Math.random() * 4) + 5; // 5 to 8 base burst shots
-                    const wName = (player && player.currentWeapon && player.currentWeapon.name) ? player.currentWeapon.name : '';
-                    const isMachinegunEquipped = wName.toLowerCase().includes('machine') || wName.includes('기관총') || (player && player.currentWeapon && player.currentWeapon.id === 'machinegun');
-                    const halfAmmoBonus = isMachinegunEquipped ? Math.floor((player.currentWeapon.maxAmmo || 30) / 2) : 0;
-                    const burstCount = baseBurst + halfAmmoBonus; // Dynamic formula: strictly when player equips Machinegun!
+                    const machinegunMaxAmmo = 30; // Machinegun's standard max ammo is 30
+                    const halfAmmoBonus = Math.floor(machinegunMaxAmmo / 2); // 15 shots bonus!
+                    const burstCount = baseBurst + halfAmmoBonus; // Formula: (5~8) + (Machinegun MaxAmmo / 2) = 20~23 shots!
                     for (let burstIndex = 0; burstIndex < burstCount; burstIndex++) {
                         setTimeout(() => {
                             if (enemy && enemy.hp > 0) {

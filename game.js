@@ -2337,7 +2337,7 @@ function spawnEnemy() {
         colorFilter = 'hue-rotate(330deg) saturate(320%) brightness(1.25)'; // Deep Crimson Red
     } else if (bodyType === 'laser_eye') {
         sizeMult *= 0.7;   // Small compact size!
-        hpMult *= 0.01;    // 1 shot kill (One bullet killable!)
+        hpMult *= 2.8;     // Takes exactly 3 hits to kill!
         speedMult *= 1.35;
         shotCount = 0;
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';

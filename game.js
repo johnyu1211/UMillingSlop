@@ -4810,8 +4810,8 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     }
                 }
 
-                // Slower animation tempo for non-attack walking state (230ms per frame vs 110ms for attack)!
-                const frameSpeed = (row === 3 || row === 4) ? 110 : 230;
+                // Slower animation tempo for non-attack walking state (360ms per frame vs 110ms for attack)!
+                const frameSpeed = (row === 3 || row === 4) ? 110 : 360;
                 const animIndex = Math.floor(Date.now() / frameSpeed) % totalCols;
 
                 const srcX = animIndex * frameW;

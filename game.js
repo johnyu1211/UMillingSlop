@@ -2889,8 +2889,10 @@ function update(deltaTime) {
     
     let moveSpeed = player.isDodging ? player.dodgeSpeed : player.speed;
 
-    // --- SHOT ROLL II: Hard Lock Max Ammo = 1 & 2x Speed for Non-Aim Movement (0.8s) + Grey Afterimages ---
-    if (player.shotRoll2Selected) {
+    // --- SHOT ROLL II: Hard Lock Max Ammo = 1 ONLY when Shotgun is equipped! ---
+    const isShotgunEquipped = (player.currentWeapon && (player.currentWeapon.name === "winchester shotgun ww2 version" || player.currentWeapon.ammoShotNum > 1));
+
+    if (player.shotRoll2Selected && isShotgunEquipped) {
         player.maxAmmo = 1;
         if (player.ammo > 1) player.ammo = 1;
     }

@@ -419,7 +419,13 @@ let PlayercollisionY= player.y ;
 let PlayercollisionSize= player.size -SpriteColisionGap; 
 
 let playerSprite = new Image();
-playerSprite.src = "Player.png"; 
+playerSprite.onerror = function() {
+    if (!this.attemptedFallback) {
+        this.attemptedFallback = true;
+        this.src = "player.png";
+    }
+};
+playerSprite.src = "./Player.png"; 
 
 
 let animationTimer = 0; // Explicit initialization is key! 
@@ -3296,6 +3302,7 @@ function getAngleToMouse(playerX, playerY, mouseX, mouseY) {
 
 
 function drawPlayer(playercurrentFrame, deltaTime) {    
+    if (!playerSprite || !playerSprite.complete || playerSprite.naturalWidth === 0) return;
 
     let sourceX =0;
 

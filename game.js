@@ -1261,10 +1261,10 @@ targetImageReloadTEXT.src = "targetImageReloadTEXT.png"
 
 let gameState = 'startingRoom'; // Possible states: 'startingRoom', 'gameStarted'
 const door = {
-    x: canvas.width / 2 - 25,
-    y: 350,
-    width: 50,
-    height: 10,
+    x: gameWorld.width / 2 - 40,
+    y: gameWorld.height / 2 - 200,
+    width: 80,
+    height: 110,
     isOpen: true
 };
 
@@ -3635,10 +3635,58 @@ function draw(currentFrame, deltaTime) {
 }
 
 function drawDoor() {
-    if (door.isOpen) {
-        ctx.fillStyle = 'brown';
-        ctx.fillRect(door.x, door.y, door.width, door.height);
-    }
+    if (!door.isOpen) return;
+
+    const dx = door.x;
+    const dy = door.y;
+    const dw = door.width;
+    const dh = door.height;
+    const pulse = (Math.sin(Date.now() * 0.005) + 1) * 0.5;
+
+    ctx.save();
+
+    // 1. Outer Threshold Glow Base
+    ctx.shadowColor = 'rgba(255, 30, 60, 0.9)';
+    ctx.shadowBlur = 18 + pulse * 10;
+    ctx.fillStyle = 'rgba(25, 18, 22, 0.95)';
+    ctx.fillRect(dx, dy, dw, dh);
+
+    // 2. Inner Red Portal Energy Vortex (Glowing Crimson Core)
+    const grad = ctx.createRadialGradient(dx + dw / 2, dy + dh / 2, 6, dx + dw / 2, dy + dh / 2, dw * 0.7);
+    grad.addColorStop(0, `rgba(255, 100, 120, ${0.95 + pulse * 0.05})`);
+    grad.addColorStop(0.55, `rgba(220, 20, 50, 0.88)`);
+    grad.addColorStop(1, 'rgba(70, 0, 15, 0.98)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(dx + 6, dy + 6, dw - 12, dh - 12);
+
+    // 3. Metallic Gate Outer Frame & Trim
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = '#9AAEC4';
+    ctx.lineWidth = 5;
+    ctx.strokeRect(dx, dy, dw, dh);
+
+    ctx.strokeStyle = '#384858';
+    ctx.lineWidth = 2.5;
+    ctx.strokeRect(dx + 3, dy + 3, dw - 6, dh - 6);
+
+    // 4. Arched Door Header Decor
+    ctx.fillStyle = '#1A2228';
+    ctx.beginPath();
+    ctx.arc(dx + dw / 2, dy, dw / 2, Math.PI, 0);
+    ctx.fill();
+    ctx.strokeStyle = '#9AAEC4';
+    ctx.lineWidth = 4;
+    ctx.stroke();
+
+    // 5. Door Signboard Text Overlay
+    ctx.font = '900 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = '#FF2244';
+    ctx.shadowBlur = 9;
+    ctx.fillText('ENTRY GATE', dx + dw / 2, dy - 12);
+
+    ctx.restore();
 }
 
 function checkDoorEntry() {

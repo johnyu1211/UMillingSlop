@@ -5467,10 +5467,8 @@ function renderHitboxes(ctx) {
     ctx.restore();
 }
 
-// Spawn initial enemies
-for (let i = 0; i < 5; i++) {
-    spawnEnemy();
-}
+// Spawn initial lobby humanoid guards for starting room!
+spawnLobbyHumanoids();
 
 // Despawn All Active Monsters Button Event Listener
 const despawnBtn = document.getElementById('despawnEnemiesBtn');

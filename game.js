@@ -73,6 +73,13 @@ function updateAndDrawYellowBulletTrails(ctx) {
     for (let i = 0; i < playerBullets.length; i++) {
         const bullet = playerBullets[i];
         if (bullet.isGayShot && bullet.originX !== undefined) {
+            // Linear Gradient: Completely transparent at origin, smooth fade-in towards bullet head!
+            const grad = ctx.createLinearGradient(bullet.originX, bullet.originY, bullet.x, bullet.y);
+            grad.addColorStop(0, 'rgba(255, 215, 0, 0.0)');    // 100% Transparent at start point!
+            grad.addColorStop(0.35, 'rgba(255, 215, 0, 0.4)'); // Smooth fade-in
+            grad.addColorStop(1.0, 'rgba(255, 215, 0, 0.95)'); // Solid bright yellow at head!
+
+            ctx.strokeStyle = grad;
             ctx.beginPath();
             ctx.moveTo(bullet.originX, bullet.originY);
             ctx.lineTo(bullet.x, bullet.y);

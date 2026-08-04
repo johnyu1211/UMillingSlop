@@ -3229,6 +3229,23 @@ function updateSidebarUI() {
 
 function drawInfoBox(){
     updateSidebarUI();
+
+    // Render Prominent Top-Center Level & XP Text HUD Overlay!
+    if (player && gameState === 'gameStarted') {
+        ctx.save();
+        ctx.font = '900 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = '#52CBBC';
+        ctx.shadowBlur = 10;
+        ctx.fillText(`LEVEL ${player.level || 1}`, canvas.width / 2, 30);
+
+        ctx.font = '700 12px sans-serif';
+        ctx.fillStyle = '#52CBBC';
+        ctx.shadowBlur = 0;
+        ctx.fillText(`XP: ${Math.floor(player.xp || 0)} / ${player.xpToNextLevel || 100}`, canvas.width / 2, 46);
+        ctx.restore();
+    }
 }
 
 
@@ -3681,6 +3698,16 @@ function drawPlayer(playercurrentFrame, deltaTime) {
 
     sourceX = playercurrentFrame * spriteWidth
 
+
+    // Draw Player Level Text Overlay above head/HP bar!
+    ctx.save();
+    ctx.font = '900 13px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FFFFFF';
+    ctx.shadowColor = '#000000';
+    ctx.shadowBlur = 5;
+    ctx.fillText(`LV.${player.level || 1}`, player.x + 40, player.y - 4);
+    ctx.restore();
 
     drawHpBar(player.x+25, player.y+12 - 10, 30, 5, player.hp / player.maxHp, 'lime');
 

@@ -4153,15 +4153,15 @@ function updateEnemies(deltaTime) {
                                 enemyBullets.push({
                                     x: enemy.x + enemy.size / 2,
                                     y: enemy.y + enemy.size / 2,
-                                    velocityX: Math.cos(curAngle) * 6.5,
-                                    velocityY: Math.sin(curAngle) * 6.5,
+                                    velocityX: Math.cos(curAngle) * 9.2,
+                                    velocityY: Math.sin(curAngle) * 9.2,
                                     size: 7,
                                     color: (enemy.bodyType === 'assault_humanoid') ? '#52CBBC' : bColor,
                                     isRectBullet: true,
                                     tier: enemy.tier || 1
                                 });
                             }
-                        }, burstIndex * 105);
+                        }, burstIndex * 65);
                     }
                 } else if (count === 1) {
                     enemyBullets.push({

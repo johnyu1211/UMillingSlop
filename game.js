@@ -2175,9 +2175,10 @@ function drawGameStats() {
     ctx.textAlign = 'center'; // Center the text horizontally
     ctx.textBaseline = 'top'; // Align the text to the top
     ctx.fillText(formattedTime, canvas.width / 2, 10); // Draw the text at the top center of the canvas
-    // Display total kills below the timer
-    const statsY = timerY + 30; // Position below the timer
-    ctx.fillText(`                Total Kills: ${totalKills}`, timerX, statsY);
+    // Display total kills & Level below the timer in exact same font and style
+    const statsY = timerY + 25; // Position below the timer
+    ctx.fillText(`Total Kills: ${totalKills}`, canvas.width / 2, statsY);
+    ctx.fillText(`Level: ${player.level || 1}`, canvas.width / 2, statsY + 22);
 }
 
 
@@ -3229,23 +3230,6 @@ function updateSidebarUI() {
 
 function drawInfoBox(){
     updateSidebarUI();
-
-    // Render Prominent Top-Center Level & XP Text HUD Overlay!
-    if (player && gameState === 'gameStarted') {
-        ctx.save();
-        ctx.font = '900 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#FFFFFF';
-        ctx.shadowColor = '#52CBBC';
-        ctx.shadowBlur = 10;
-        ctx.fillText(`LEVEL ${player.level || 1}`, canvas.width / 2, 30);
-
-        ctx.font = '700 12px sans-serif';
-        ctx.fillStyle = '#52CBBC';
-        ctx.shadowBlur = 0;
-        ctx.fillText(`XP: ${Math.floor(player.xp || 0)} / ${player.xpToNextLevel || 100}`, canvas.width / 2, 46);
-        ctx.restore();
-    }
 }
 
 

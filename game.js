@@ -2852,7 +2852,7 @@ function drawParticles(ctx) {
             ctx.translate(p.x, p.y);
             ctx.rotate(p.angle || 0);
 
-            const w = p.width || 125;  // Extended long length behind
+            const w = p.width || 72;   // Moderately shortened trail length behind
             const h = p.height || 16;  // Compact slender width (smaller size)
 
             // Gradient: Left (-w, tail far behind) is transparent, Right (0, near enemy center) is bright crimson red!
@@ -4148,7 +4148,7 @@ function updateEnemies(deltaTime) {
                 const eCenterX = enemy.x + enemy.size / 2;
                 const eCenterY = enemy.y + enemy.size / 2;
                 const rushAngle = Math.atan2(pCenterY - eCenterY, pCenterX - eCenterX);
-                const rushSpeed = enemy.speed * 4.0; // 4.0x Ultra Ghost Sprint!
+                const rushSpeed = enemy.speed * 6.2; // 6.2x Lightning High-Speed Counter Rush!
                 enemy.dodgeRushVecX = Math.cos(rushAngle) * rushSpeed;
                 enemy.dodgeRushVecY = Math.sin(rushAngle) * rushSpeed;
                 enemy.dodgeRushAngle = rushAngle;
@@ -4579,11 +4579,11 @@ function updateEnemies(deltaTime) {
                         particles.push({
                             x: enemy.x + enemy.size / 2,
                             y: enemy.y + enemy.size / 2,
-                            width: enemy.size * 2.8,  // Extended long length extending far behind
+                            width: enemy.size * 1.6,  // Moderately shortened trail length (70-75px)
                             height: enemy.size * 0.35, // Slender compact width (smaller size)
                             angle: enemy.dodgeRushAngle || 0,
-                            lifeSpan: 20,
-                            maxLifeSpan: 20,
+                            lifeSpan: 18,
+                            maxLifeSpan: 18,
                             isRedFadingRectTrail: true,
                             color: '#FF1133'
                         });

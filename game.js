@@ -2355,11 +2355,16 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
     }
 
     // Balanced Enemy Pool Unlocking with LaserEye & Low Grabber/Suicide Bomber Spawn Rate!
-    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid'];
+    const basicBodyTypes = ['normal', 'normal', 'giant_head', 'floating_hands', 'double_torso', 'split_mutant', 'three_head', 'laser_eye', 'cannon_laser_head', 'green_laser_eye'];
     let bodyType = forcedBodyType || basicBodyTypes[Math.floor(Math.random() * basicBodyTypes.length)];
 
+    // Rare Spawn Logic: 10% Rare Chance to spawn Machinegun Humanoid!
+    if (!forcedBodyType && Math.random() < 0.10) {
+        bodyType = 'machinegun_humanoid';
+    }
+
     // 15% Rare Chance to spawn Kamikaze Exploders if player level unlocked!
-    if (!forcedBodyType && Math.random() < 0.15) {
+    if (!forcedBodyType && bodyType !== 'machinegun_humanoid' && Math.random() < 0.15) {
         if (pLvl >= 5 && Math.random() < 0.5) {
             bodyType = 'red_kamikaze_exploder';
         } else if (pLvl >= 3) {
@@ -2499,10 +2504,10 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
         customSprite = 'enemyBasic/_Type2_Archive/00341-663612114.png';
         colorFilter = 'hue-rotate(100deg) saturate(220%) contrast(1.1)'; // Electric Lime Green Filter!
     } else if (bodyType === 'machinegun_humanoid') {
-        sizeMult *= 1.2;
-        hpMult *= 2.2;
-        speedMult *= 1.0;
-        shotCount = 3;     // Rapid 3-burst shooter
+        sizeMult *= 1.15;
+        hpMult *= 1.4;     // Softened HP (1.4x instead of 2.2x)
+        speedMult *= 0.95;  // Slightly softer walking speed
+        shotCount = 3;     // Rapid burst shooter
         customSprite = 'OLD/RoBChar.png';
         colorFilter = 'hue-rotate(180deg) saturate(154%) brightness(86%)'; // Exact User Parameters: Hue 180, Saturation 154%, Brightness -14% (86%)!
     } else if (bodyType === 'assault_humanoid') {
@@ -4183,7 +4188,7 @@ function updateEnemies(deltaTime) {
 
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
                     enemy.lastAttackAnimTime = Date.now(); // Record attack animation start timestamp!
-                    const burstCount = (player && player.currentWeapon && player.currentWeapon.maxAmmo) ? player.currentWeapon.maxAmmo : 30; // Exactly matches player machinegun maxAmmo!
+                    const burstCount = 16; // Balanced 16-burst sequence for fair gameplay difficulty!
                     enemy.lastBurstCount = burstCount; // Store total burst shot count for dynamic animation sync!
                     for (let burstIndex = 0; burstIndex < burstCount; burstIndex++) {
                         setTimeout(() => {
@@ -4192,15 +4197,15 @@ function updateEnemies(deltaTime) {
                                 enemyBullets.push({
                                     x: enemy.x + enemy.size / 2,
                                     y: enemy.y + enemy.size / 2,
-                                    velocityX: Math.cos(curAngle) * 9.2,
-                                    velocityY: Math.sin(curAngle) * 9.2,
+                                    velocityX: Math.cos(curAngle) * 7.2,
+                                    velocityY: Math.sin(curAngle) * 7.2,
                                     size: 7,
-                                    color: (enemy.bodyType === 'assault_humanoid') ? '#52CBBC' : bColor,
+                                    color: '#52CBBC',
                                     isRectBullet: true,
                                     tier: enemy.tier || 1
                                 });
                             }
-                        }, burstIndex * 65);
+                        }, burstIndex * 80);
                     }
                 } else if (count === 1) {
                     enemyBullets.push({
@@ -5286,7 +5291,7 @@ function handleCollisions() {
                     if (enemy.timeUntilNextAttack > 0 && !isFiringNow) {
                         enemy.isShieldActive = true;
                         enemy.shieldTimer = 750; // 750ms Protective Guard Posture!
-                        hitDmg *= 0.05; // Exactly 95% Damage Reduction Block! (Takes only 5% damage)
+                        hitDmg *= 0.30; // Softened 70% Damage Reduction Block! (Takes 30% damage)
                     }
                 }
 

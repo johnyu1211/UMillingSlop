@@ -19,6 +19,12 @@ Top-down action survival shooter game featuring dynamic procedural falling walls
 2. Use **WASD** to move, **Mouse** to aim and shoot.
 3. Evade falling walls and lethal laser sweeps while surviving mutant waves!
 
+## 📜 Credits & External Assets
+
+- **Guns Asset Pack**: [c1aymor3 on itch.io](https://itch.io/profile/c1aymor3)
+- **World Tileset**: [0x72 - DungeonTileset II](https://0x72.itch.io/dungeontileset-ii)
+- **Player Character Sprite**: [Lucky Loops - Character Satyr](https://lucky-loops.itch.io/character-satyr)
+
 ## 🛠️ Built With
 
 - **HTML5 Canvas** & **Vanilla JavaScript**

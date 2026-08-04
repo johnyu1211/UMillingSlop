@@ -2553,10 +2553,15 @@ function spawnEnemy(presetPos = null, forcedBodyType = null) {
         initialCooldown = 300;
     }
 
-    // 100% PURE Isolated State Guard: Force clear customSprite for standard mutant bodyTypes!
+    // 100% PURE Isolated State Guard: Force clear customSprite & strictly lock colorFilter for custom bodyTypes!
     const hasCustomSprite = ['kamikaze_exploder', 'red_kamikaze_exploder', 'laser_eye', 'cannon_laser_head', 'green_laser_eye', 'machinegun_humanoid', 'assault_humanoid'].includes(bodyType);
     if (!hasCustomSprite) {
         customSprite = null;
+    }
+    if (bodyType === 'machinegun_humanoid') {
+        colorFilter = 'hue-rotate(180deg) saturate(154%) brightness(86%)';
+    } else if (bodyType === 'assault_humanoid') {
+        colorFilter = 'none';
     }
 
     const baseEnemyHp = 30 + (pLvl - 1) * 8;

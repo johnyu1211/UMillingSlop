@@ -2513,7 +2513,7 @@ function spawnEnemy() {
     const attackType = (bodyType === 'kamikaze_exploder' || bodyType === 'red_kamikaze_exploder') ? 'suicide_explode' : (isMeleeDashType ? 'dash' : 'ranged');
     const headPattern = (bodyType === 'three_head') ? (Math.random() < 0.5 ? 0 : 1) : 0;
 
-    if (isMeleeDashType && bodyType !== 'kamikaze_exploder' && bodyType !== 'red_kamikaze_exploder') {
+    if (isMeleeDashType && bodyType !== 'kamikaze_exploder' && bodyType !== 'red_kamikaze_exploder' && bodyType !== 'machinegun_humanoid' && bodyType !== 'assault_humanoid') {
         speedMult *= 1.35; // Melee chargers move 35% faster
         shotCount = 0;    // Does not shoot bullets
         colorFilter = 'hue-rotate(40deg) saturate(280%) brightness(1.2)'; // Fiery Amber Orange

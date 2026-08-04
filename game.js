@@ -4191,8 +4191,13 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
-                // Reset the attack cooldown
-                enemy.timeUntilNextAttack = enemy.attackCooldown;
+                // Reset the attack cooldown (Humanoids get extended cooldown after full 30-burst sequence!)
+                if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
+                    const totalBurstDuration = (enemy.lastBurstCount || 30) * 65;
+                    enemy.timeUntilNextAttack = totalBurstDuration + (enemy.attackCooldown || 3200);
+                } else {
+                    enemy.timeUntilNextAttack = enemy.attackCooldown;
+                }
             }
         }
 

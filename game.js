@@ -950,11 +950,11 @@ const allLevelUpOptions = [
         } 
     },
     { 
-        title: '💥 GayShot', 
+        title: '💥 RainbowShot', 
         desc: 'Rainbow Chromatic Pellets oscillating in rotating DNA double-helix spiral wave patterns!', 
-        condition: () => (player.straightShotSelected && !player.gayShotSelected),
+        condition: () => (player.straightShotSelected && !player.rainbowShotSelected),
         effect: () => { 
-            player.gayShotSelected = true;
+            player.rainbowShotSelected = true;
         } 
     },
     { 
@@ -2693,7 +2693,7 @@ function createBullet(array, x, y, targetX, targetY, isSecondBurst = false, isTw
                     color: finalColor,
                     glowColor: flameGlowColor,
                     isBurnBullet: isBurnBullet,
-                    isGayShot: player.gayShotSelected,
+                    isRainbowShot: player.rainbowShotSelected,
                     dnaIndex: i,
                     dnaPhase: (i % 2 === 0 ? 0 : Math.PI), // Opposite DNA phase for double-helix!
                     traveledDist: 0
@@ -3883,7 +3883,7 @@ function updateEntities(array) {
     for (let index = array.length - 1; index >= 0; index--) {
         const entity = array[index];
         
-        if (entity.isGayShot && entity.originX !== undefined) {
+        if (entity.isRainbowShot && entity.originX !== undefined) {
             entity.traveledDist = (entity.traveledDist || 0) + Math.hypot(entity.velocityX, entity.velocityY);
             const wave = Math.sin(entity.traveledDist * 0.075 + entity.dnaPhase) * 15; // Rotating DNA Double-Helix Spiral Wave!
 
@@ -3974,8 +3974,8 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
             }
         }
 
-        // Draw individual special bullets (e.g. GayShot)
-        if (bullet.isGayShot) {
+        // Draw individual special bullets (e.g. RainbowShot)
+        if (bullet.isRainbowShot) {
             const rainbowHue = (performance.now() * 0.45 + (bullet.dnaIndex || 0) * 45) % 360;
             const rainbowColor = `hsl(${rainbowHue}, 100%, 65%)`;
             ctx.fillStyle = rainbowColor;
@@ -3993,7 +3993,7 @@ function drawEntities(array, color, glowcolor, bulletTailThicc, tailColor1, tail
     ctx.beginPath();
     for (let i = 0; i < array.length; i++) {
         const bullet = array[i];
-        if (!bullet.isGayShot) {
+        if (!bullet.isRainbowShot) {
             const r = (bullet.size || 7) / 2;
             ctx.moveTo(bullet.x + r, bullet.y);
             ctx.arc(bullet.x, bullet.y, r, 0, Math.PI * 2);

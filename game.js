@@ -4191,10 +4191,10 @@ function updateEnemies(deltaTime) {
                     }
                 }
 
-                // Reset the attack cooldown (Humanoids get extended cooldown after full 30-burst sequence!)
+                // Reset the attack cooldown (Humanoids get 2x extended reload cooldown 6.4s!)
                 if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
                     const totalBurstDuration = (enemy.lastBurstCount || 30) * 65;
-                    enemy.timeUntilNextAttack = totalBurstDuration + (enemy.attackCooldown || 3200);
+                    enemy.timeUntilNextAttack = totalBurstDuration + 6400; // Exactly 2x extended reload duration (6.4s)!
                 } else {
                     enemy.timeUntilNextAttack = enemy.attackCooldown;
                 }
@@ -4350,6 +4350,24 @@ function updateEnemies(deltaTime) {
                 const finalAngle = baseAngle + enemy.flankAngle;
 
                 let curSpeed = enemy.speed;
+
+                // Humanoid Reload Phase: 2x Extended Reload + Crimson Red Afterimage Rush Sprint!
+                const isHumanoidReloading = (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') && (enemy.timeUntilNextAttack > 0);
+                if (isHumanoidReloading) {
+                    curSpeed *= 1.85; // 1.85x High Speed Rush Sprint!
+                    if (Math.random() < 0.65) {
+                        particles.push({
+                            x: enemy.x + enemy.size / 2 + (Math.random() - 0.5) * enemy.size * 0.4,
+                            y: enemy.y + enemy.size / 2 + (Math.random() - 0.5) * enemy.size * 0.4,
+                            velocityX: (Math.random() - 0.5) * 1.5,
+                            velocityY: (Math.random() - 0.5) * 1.5,
+                            size: Math.random() * 6 + 3.5,
+                            lifeSpan: 16,
+                            color: '#FF1133' // Crimson Red Afterimage!
+                        });
+                    }
+                }
+
                 if (enemy.yellowSlowTimer > 0) {
                     enemy.yellowSlowTimer -= (deltaTime || 16);
                     curSpeed *= 0.5; // 50% Slow Down when touched by Yellow Trail!

@@ -17,8 +17,8 @@ let totalKills = 0; // Total number of enemies killed by the player
 
 
 const gameWorld = {
-    width: 4200, // Massive expanded width of the game world (4200px)
-    height: 4200, // Massive expanded height of the game world (4200px)
+    width: 2000, // Cozy default width for Lobby startingRoom (2000px)
+    height: 2000, // Cozy default height for Lobby startingRoom (2000px)
     borderWidth: 10, // Width of the border line
 };
 
@@ -5545,11 +5545,13 @@ function resetGame() {
     triggerWallReorganization();
     totalKills = 0;
     gameStartTime = Date.now();
-    levelUpState = false;
-    isPaused = false;
-    
-    for (let k in keys) { keys[k] = false; }
-    
+    gameState = 'startingRoom';
+    gameWorld.width = 2000;
+    gameWorld.height = 2000;
+    door.x = gameWorld.width / 2 - 40;
+    door.y = 350;
+    door.isOpen = true;
+
     player.x = gameWorld.width / 2;
     player.y = gameWorld.height / 2;
     

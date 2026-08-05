@@ -17,15 +17,15 @@ let totalKills = 0; // Total number of enemies killed by the player
 
 
 const gameWorld = {
-    width: 2000, // Width of the game world
-    height: 2000, // Height of the game world
+    width: 4200, // Massive expanded width of the game world (4200px)
+    height: 4200, // Massive expanded height of the game world (4200px)
     borderWidth: 10, // Width of the border line
 };
 
-const maxRoomWidth = 5200;
-const minRoomWidth = 2150;
-const maxRoomHeight = 5200;
-const minRoomHeight = 1150;
+const maxRoomWidth = 6000;
+const minRoomWidth = 3600;
+const maxRoomHeight = 6000;
+const minRoomHeight = 3600;
 
 const startingXPosition = 800;
 const startingYPosition = 400;

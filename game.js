@@ -3609,7 +3609,24 @@ function draw(currentFrame, deltaTime) {
         ctx.fillText('Killed By:', cardX + 45, cardY + 95);
         ctx.fillStyle = '#FF4455';
         ctx.font = 'bold 15px Arial, sans-serif';
-        ctx.fillText(player.killedBy || "Slain in Battle", cardX + 165, cardY + 95);
+
+        // Multi-line word wrapping for long death message text
+        const reasonText = player.killedBy || "Slain in Battle";
+        const maxReasonW = 295;
+        const words = reasonText.split(' ');
+        let line = '';
+        let lineY = cardY + 95;
+        for (let wIdx = 0; wIdx < words.length; wIdx++) {
+            const testLine = line + words[wIdx] + ' ';
+            if (ctx.measureText(testLine).width > maxReasonW && wIdx > 0) {
+                ctx.fillText(line.trim(), cardX + 165, lineY);
+                line = words[wIdx] + ' ';
+                lineY += 20;
+            } else {
+                line = testLine;
+            }
+        }
+        ctx.fillText(line.trim(), cardX + 165, lineY);
         ctx.font = '15px Arial, sans-serif';
 
         ctx.fillStyle = '#AAAAAA';

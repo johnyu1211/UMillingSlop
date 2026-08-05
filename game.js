@@ -2015,7 +2015,7 @@ function updateAndDrawWalls(ctx, deltaTime) {
                 if (!player.isDead && pHitX < w.x + tileSize && pHitX + 22 > w.x &&
                     pHitY < w.y + tileSize && pHitY + 36 > w.y) {
                     player.hp = 0;
-                    gameOver();
+                    gameOver("Crushed to Death under Massive Moving Structural Wall");
                 }
 
                 for (let e = enemies.length - 1; e >= 0; e--) {
@@ -3607,8 +3607,10 @@ function draw(currentFrame, deltaTime) {
 
         ctx.fillStyle = '#AAAAAA';
         ctx.fillText('Killed By:', cardX + 45, cardY + 95);
-        ctx.fillStyle = '#FFFFFF';
+        ctx.fillStyle = '#FF4455';
+        ctx.font = 'bold 15px Arial, sans-serif';
         ctx.fillText(player.killedBy || "Slain in Battle", cardX + 165, cardY + 95);
+        ctx.font = '15px Arial, sans-serif';
 
         ctx.fillStyle = '#AAAAAA';
         ctx.fillText('Total Kills:', cardX + 45, cardY + 130);
@@ -4419,7 +4421,7 @@ function updateEnemies(deltaTime) {
             // Explode immediately when approaching within 80px!
             if (distToPlayer < 80) {
                 triggerExplosion(eCenterX, eCenterY);
-                applyPlayerDamage(isRed ? 28 : 24, isRed ? "Red Exploder (Exploded)" : "Grey Exploder (Exploded)");
+                applyPlayerDamage(isRed ? 28 : 24, "Blown to Pieces by Kamikaze Suicide Explosion");
                 enemy.hp = 0;
             }
         }
@@ -4459,7 +4461,13 @@ function updateEnemies(deltaTime) {
                 const distToPlayer = Math.hypot(player.x - (enemy.x + enemy.size / 2), player.y - (enemy.y + enemy.size / 2));
                 if (distToPlayer < (enemy.size / 2 + player.size / 2)) {
                     const eName = getEnemyEnglishName(enemy.bodyType);
-                    applyPlayerDamage(12, `${eName} (Melee Strike)`); // Melee Smash Damage
+                    let causeReason = `Torn Apart by ${eName}'s Vicious Melee Attack`;
+                    if (enemy.bodyType === 'floating_hands') {
+                        causeReason = "Obliterated by Grabber's Powerful Iron Hook";
+                    } else if (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') {
+                        causeReason = "Mowed Down by Humanoid's Rapid Energy Barrage";
+                    }
+                    applyPlayerDamage(12, causeReason); // Melee Smash Damage
                     enemy.isDashing = false;
                     enemy.timeUntilNextAttack = enemy.attackCooldown;
                 }
@@ -4835,7 +4843,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     const pRadius = 24;
                     const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
                     if (distToBeam < pRadius) {
-                        applyPlayerDamage(4, "Laser Eye (Beam Sweep)");
+                        applyPlayerDamage(4, "Sniped into Ashes by Precision High-Energy Laser Beam");
                     }
                 }
                 ctx.restore();
@@ -4901,7 +4909,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                     // Beam Hit Check on Player
                     const distToBeam = distToSegment({ x: pCenterX, y: pCenterY }, { x: eCenterX, y: eCenterY }, { x: beamEndX, y: beamEndY });
                     if (distToBeam < (beamWidth / 2 + 20)) {
-                        applyPlayerDamage(10, "Cannon Laser Head (Pink Beam Blast)");
+                        applyPlayerDamage(10, "Sniped into Ashes by Precision High-Energy Laser Beam");
                     }
                 }
                 ctx.restore();
@@ -4977,7 +4985,7 @@ function renderMutantEnemySprite(enemy, sourceX, sy, spriteWidth, spriteHeight) 
                         const now = Date.now();
                         if (!enemy.lastGreenDamageTime || (now - enemy.lastGreenDamageTime) > 300) {
                             enemy.lastGreenDamageTime = now;
-                            applyPlayerDamage(1, "Green Laser Eye (Continuous Beam Sweep)");
+                            applyPlayerDamage(1, "Sniped into Ashes by Precision High-Energy Laser Beam");
                         }
                     }
                 }
@@ -5413,11 +5421,11 @@ function handleCollisions() {
             enemyBullets.splice(bulletIndex, 1);
 
             if (!player.isDodging) {
-                applyPlayerDamage(10, "Laser Mutant (Shot Down)");
-            }
-
-            if (player.hp <= 0) {
-                gameOver();
+                let bulletReason = "Shot Down by Precision Energy Bullet";
+                if (bullet.color === '#52CBBC' || bullet.isRectBullet) {
+                    bulletReason = "Mowed Down by Humanoid's Rapid Energy Barrage";
+                }
+                applyPlayerDamage(10, bulletReason);
             }
         }
  

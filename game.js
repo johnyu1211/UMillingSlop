@@ -4517,6 +4517,12 @@ function updateEnemies(deltaTime) {
 
                 let curSpeed = enemy.speed;
 
+                // Off-screen Catch-Up Sprint: When enemy is far outside view (> 1100px), fast-sprint (3.8x speed) back to player view!
+                const distToPlayer = Math.hypot(player.x - (enemy.x + enemy.size / 2), player.y - (enemy.y + enemy.size / 2));
+                if (distToPlayer > 1100) {
+                    curSpeed *= 3.8; // 3.8x High-Speed Off-Screen Catch-Up Sprint!
+                }
+
                 // Humanoid Reload Phase: 2x Extended Reload + Crimson Red Afterimage Rush Sprint!
                 const isHumanoidReloading = (enemy.bodyType === 'machinegun_humanoid' || enemy.bodyType === 'assault_humanoid') && (enemy.timeUntilNextAttack > 0);
                 if (isHumanoidReloading) {
